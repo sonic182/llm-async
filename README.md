@@ -1,4 +1,4 @@
-# llmpy
+# llm_async
 
 An async-first Python library for interacting with Large Language Model (LLM) providers.
 
@@ -44,13 +44,13 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
 ### Using Poetry (Recommended)
 
 ```bash
-poetry add llmpy
+poetry add llm_async
 ```
 
 ### Using pip
 
 ```bash
-pip install git+https://github.com/sonic182/llmpy.git
+pip install git+https://github.com/sonic182/llm_async.git
 ```
 
 ## Usage
@@ -60,7 +60,7 @@ pip install git+https://github.com/sonic182/llmpy.git
 #### OpenAI
 ```python
 import asyncio
-from llmpy import OpenAIProvider
+from llm_async import OpenAIProvider
 
 async def main():
     # Initialize the provider with your API key
@@ -85,7 +85,7 @@ asyncio.run(main())
 ```python
 import asyncio
 import os
-from llmpy import OpenRouterProvider
+from llm_async import OpenRouterProvider
 
 async def main():
     # Initialize the provider with your API key
@@ -111,7 +111,7 @@ asyncio.run(main())
 #### Google Gemini
 ```python
 import asyncio
-from llmpy.providers.google import GoogleProvider
+from llm_async.providers.google import GoogleProvider
 
 async def main():
     # Initialize the provider with your API key
@@ -144,8 +144,8 @@ provider = OpenAIProvider(
 
 ```python
 import asyncio
-from llmpy.models import Tool
-from llmpy.providers import OpenAIProvider, ClaudeProvider
+from llm_async.models import Tool
+from llm_async.providers import OpenAIProvider, ClaudeProvider
 
 # Define a calculator tool that works with both providers
 calculator_tool = Tool(
@@ -218,7 +218,7 @@ asyncio.run(main())
 
 ### Pub/Sub Events for Tool Execution
 
-llmpy supports real-time event emission during tool execution via a pub/sub system. This allows you to monitor tool progress, handle errors, and build interactive UIs for agentic workflows.
+llm_async supports real-time event emission during tool execution via a pub/sub system. This allows you to monitor tool progress, handle errors, and build interactive UIs for agentic workflows.
 
 Events are emitted for each tool call with topics like `tools.{provider}.{tool_name}.{status}` where status is `start`, `complete`, or `error`.
 
@@ -226,9 +226,9 @@ Events are emitted for each tool call with topics like `tools.{provider}.{tool_n
 
 ```python
 import asyncio
-from llmpy import OpenAIProvider
-from llmpy.pubsub import LocalQueueBackend, PubSub
-from llmpy.models import Tool
+from llm_async import OpenAIProvider
+from llm_async.pubsub import LocalQueueBackend, PubSub
+from llm_async.models import Tool
 
 # Define your tool (same as above)
 calculator_tool = Tool(...)  # See Tool Usage example
@@ -301,8 +301,8 @@ Enforce JSON schema validation on model responses for consistent, type-safe outp
 ```python
 import asyncio
 import json
-from llmpy import OpenAIProvider
-from llmpy.providers.google import GoogleProvider
+from llm_async import OpenAIProvider
+from llm_async.providers.google import GoogleProvider
 
 # Define response schema
 response_schema = {
@@ -395,8 +395,8 @@ asyncio.run(main())
 ### Setup
 
 ```bash
-git clone https://github.com/sonic182/llmpy.git
-cd llmpy
+git clone https://github.com/sonic182/llm_async.git
+cd llm_async
 poetry install
 ```
 
@@ -420,7 +420,7 @@ poetry build
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/sonic182/llmpy).
+Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/sonic182/llm_async).
 
 ## License
 

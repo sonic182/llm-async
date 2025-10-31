@@ -1,9 +1,9 @@
 [tool.poetry]
-name = "llmpy"
+name = "llm_async"
 version = "0.1.0"
 description = "Multi-LLM Provider Library"
 authors = ["sonic182 <sonic182@example.com>"]
-packages = [{include = "llmpy"}]
+packages = [{include = "llm_async"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -48,4 +48,4 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["llmpy"]
+known-first-party = ["llm_async"]

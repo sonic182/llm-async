@@ -2,8 +2,8 @@ from typing import Any
 
 import pytest
 
-from llmpy.models import Tool
-from llmpy.providers.base import BaseProvider
+from llm_async.models import Tool
+from llm_async.providers.base import BaseProvider
 
 
 def test_base_init() -> None:

@@ -2,13 +2,13 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llmpy.utils.http import post_json, stream_json
-from llmpy.utils.retry import RetryConfig
+from llm_async.utils.http import post_json, stream_json
+from llm_async.utils.retry import RetryConfig
 
 
 @pytest.mark.asyncio
 async def test_post_json() -> None:
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
         mock_response = AsyncMock()
@@ -41,7 +41,7 @@ async def test_stream_json() -> None:
 @pytest.mark.asyncio
 async def test_post_json_retry_on_http_error() -> None:
     """Test that post_json retries on HTTP errors."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 
@@ -77,7 +77,7 @@ async def test_post_json_retry_on_http_error() -> None:
 @pytest.mark.asyncio
 async def test_post_json_retry_on_exception() -> None:
     """Test that post_json retries on network exceptions."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 
@@ -105,7 +105,7 @@ async def test_post_json_retry_on_exception() -> None:
 @pytest.mark.asyncio
 async def test_post_json_no_retry_on_client_error() -> None:
     """Test that post_json does not retry on 4xx errors."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 
@@ -132,7 +132,7 @@ async def test_post_json_no_retry_on_client_error() -> None:
 @pytest.mark.asyncio
 async def test_post_json_exhausts_retries() -> None:
     """Test that post_json raises after exhausting all retry attempts."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 
@@ -159,7 +159,7 @@ async def test_post_json_exhausts_retries() -> None:
 @pytest.mark.asyncio
 async def test_stream_json_retry_on_initial_connection() -> None:
     """Test that stream_json retries on initial connection errors."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 
@@ -201,7 +201,7 @@ async def test_stream_json_retry_on_initial_connection() -> None:
 @pytest.mark.asyncio
 async def test_stream_json_no_retry_mid_stream() -> None:
     """Test that stream_json does not retry once stream is established."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 
@@ -239,7 +239,7 @@ async def test_stream_json_no_retry_mid_stream() -> None:
 @pytest.mark.asyncio
 async def test_post_json_custom_retry_config() -> None:
     """Test that post_json accepts custom retry configuration objects."""
-    with patch("llmpy.utils.http.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.utils.http.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value.__aenter__.return_value = mock_client
 

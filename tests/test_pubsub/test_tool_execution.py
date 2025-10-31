@@ -2,10 +2,10 @@ import asyncio
 
 import pytest
 
-from llmpy.models.response import ToolCall
-from llmpy.providers.claude import ClaudeProvider
-from llmpy.providers.openai import OpenAIProvider
-from llmpy.pubsub import LocalQueueBackend, PubSub
+from llm_async.models.response import ToolCall
+from llm_async.providers.claude import ClaudeProvider
+from llm_async.providers.openai import OpenAIProvider
+from llm_async.pubsub import LocalQueueBackend, PubSub
 
 
 @pytest.mark.asyncio

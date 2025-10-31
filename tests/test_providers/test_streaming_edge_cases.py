@@ -2,16 +2,16 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llmpy.providers.claude import ClaudeProvider
-from llmpy.providers.google import GoogleProvider
-from llmpy.providers.openai import OpenAIProvider
-from llmpy.providers.openrouter import OpenRouterProvider
+from llm_async.providers.claude import ClaudeProvider
+from llm_async.providers.google import GoogleProvider
+from llm_async.providers.openai import OpenAIProvider
+from llm_async.providers.openrouter import OpenRouterProvider
 
 
 @pytest.mark.asyncio
 async def test_stream_malformed_chunks_openai() -> None:
     """Test OpenAI streaming with malformed chunks"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -50,7 +50,7 @@ async def test_stream_malformed_chunks_openai() -> None:
 @pytest.mark.asyncio
 async def test_stream_connection_error_openai() -> None:
     """Test OpenAI streaming with connection error"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -87,7 +87,7 @@ async def test_stream_connection_error_openai() -> None:
 @pytest.mark.asyncio
 async def test_stream_empty_chunks_claude() -> None:
     """Test Claude streaming with empty chunks"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -126,7 +126,7 @@ async def test_stream_empty_chunks_claude() -> None:
 @pytest.mark.asyncio
 async def test_stream_invalid_json_google() -> None:
     """Test Google streaming with invalid JSON"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -164,7 +164,7 @@ async def test_stream_invalid_json_google() -> None:
 @pytest.mark.asyncio
 async def test_stream_timeout_openrouter() -> None:
     """Test OpenRouter streaming with timeout scenario"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -204,7 +204,7 @@ async def test_stream_timeout_openrouter() -> None:
 @pytest.mark.asyncio
 async def test_stream_partial_chunks_openai() -> None:
     """Test OpenAI streaming with partial/incomplete chunks"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -243,7 +243,7 @@ async def test_stream_partial_chunks_openai() -> None:
 @pytest.mark.asyncio
 async def test_stream_no_done_marker() -> None:
     """Test streaming without [DONE] marker"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -279,7 +279,7 @@ async def test_stream_no_done_marker() -> None:
 @pytest.mark.asyncio
 async def test_stream_api_error_response() -> None:
     """Test streaming with API error response"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
 

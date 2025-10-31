@@ -2,8 +2,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llmpy.models import Response, Tool
-from llmpy.providers.openai import OpenAIProvider
+from llm_async.models import Response, Tool
+from llm_async.providers.openai import OpenAIProvider
 
 
 @pytest.mark.asyncio
@@ -15,7 +15,7 @@ async def test_openai_init() -> None:
 
 @pytest.mark.asyncio
 async def test_openai_acomplete_non_stream_success() -> None:
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -36,7 +36,7 @@ async def test_openai_acomplete_non_stream_success() -> None:
 
 @pytest.mark.asyncio
 async def test_openai_acomplete_non_stream_error() -> None:
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_client.post.side_effect = Exception("API Error")
@@ -51,7 +51,7 @@ async def test_openai_acomplete_non_stream_error() -> None:
 
 @pytest.mark.asyncio
 async def test_openai_acomplete_stream_success() -> None:
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -102,7 +102,7 @@ def test_openai_tool_formatting() -> None:
 
 @pytest.mark.asyncio
 async def test_openai_acomplete_with_tools() -> None:
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()
@@ -159,7 +159,7 @@ async def test_openai_acomplete_with_tools() -> None:
 
 @pytest.mark.asyncio
 async def test_openai_acomplete_with_response_schema() -> None:
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
         mock_response = AsyncMock()

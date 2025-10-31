@@ -3,8 +3,8 @@ from datetime import datetime
 
 import pytest
 
-from llmpy.models.event import Event
-from llmpy.pubsub import LocalQueueBackend, PubSub
+from llm_async.models.event import Event
+from llm_async.pubsub import LocalQueueBackend, PubSub
 
 
 @pytest.mark.asyncio

@@ -2,11 +2,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from llmpy.models.response import ToolCall
-from llmpy.providers.claude import ClaudeProvider
-from llmpy.providers.google import GoogleProvider
-from llmpy.providers.openai import OpenAIProvider
-from llmpy.providers.openrouter import OpenRouterProvider
+from llm_async.models.response import ToolCall
+from llm_async.providers.claude import ClaudeProvider
+from llm_async.providers.google import GoogleProvider
+from llm_async.providers.openai import OpenAIProvider
+from llm_async.providers.openrouter import OpenRouterProvider
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,7 @@
 import pytest
 
-from llmpy.models import Tool
-from llmpy.providers.google import GoogleProvider
+from llm_async.models import Tool
+from llm_async.providers.google import GoogleProvider
 
 
 def test_format_messages_with_tool_calls() -> None:

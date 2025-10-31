@@ -1,7 +1,7 @@
 from typing import Any, Callable, Optional, Union
 
-from llmpy.utils.http import post_json
-from llmpy.utils.retry import RetryConfig  # type: ignore
+from llm_async.utils.http import post_json
+from llm_async.utils.retry import RetryConfig  # type: ignore
 
 from ..models import Response, Tool
 from ..models.response import MainResponse, ToolCall

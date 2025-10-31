@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from llmpy.models.response import Response
+from llm_async.models.response import Response
 
 
 def test_response_openai_simple() -> None:

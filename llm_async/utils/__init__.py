@@ -1,4 +1,4 @@
-"""Utility modules for llmpy."""
+"""Utility modules for llm_async."""
 
 from .http import parse_stream_chunk, post_json, stream_json
 

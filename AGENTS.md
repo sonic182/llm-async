@@ -1,10 +1,10 @@
-# Agent Instructions for llmpy
+# Agent Instructions for llm_async
 
 ## Commands
 - **Test all**: `poetry run pytest -p no:sugar`
 - **Test single**: `poetry run pytest -k "test_name"`
-- **Lint**: `poetry run ruff check llmpy tests`
-- **Format**: `poetry run ruff format llmpy tests`
+- **Lint**: `poetry run ruff check llm_async tests`
+- **Format**: `poetry run ruff format llm_async tests`
 - **Build**: `poetry build`
 - **Install deps**: `poetry install`
 - **Running examples**: `poetry run python <file.py>`
@@ -12,7 +12,7 @@
 Note: try to use `-p no:sugar` whenever running tests
 
 ## Project Structure
-The main package is `llmpy`, managed with Poetry (see `pyproject.toml` for configuration).
+The main package is `llm_async`, managed with Poetry (see `pyproject.toml` for configuration).
 
 **Notes:**
 - Google provider uses camelCase for API keys (e.g., `generationConfig`, `responseMimeType`, `responseSchema`) to match Google's API specification.

@@ -2,16 +2,16 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llmpy.models import Response, Tool
-from llmpy.providers.claude import ClaudeProvider
-from llmpy.providers.openai import OpenAIProvider
-from llmpy.providers.openrouter import OpenRouterProvider
+from llm_async.models import Response, Tool
+from llm_async.providers.claude import ClaudeProvider
+from llm_async.providers.openai import OpenAIProvider
+from llm_async.providers.openrouter import OpenRouterProvider
 
 
 @pytest.mark.asyncio
 async def test_auto_tool_execution_openai_single_tool(mock_tool_executor) -> None:
     """Test auto tool execution with OpenAI provider - single tool call"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
 
@@ -73,7 +73,7 @@ async def test_auto_tool_execution_openai_single_tool(mock_tool_executor) -> Non
 @pytest.mark.asyncio
 async def test_auto_tool_execution_openai_multi_iteration(mock_tool_executor) -> None:
     """Test auto tool execution with OpenAI provider - multiple iterations"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
 
@@ -163,7 +163,7 @@ async def test_auto_tool_execution_openai_multi_iteration(mock_tool_executor) ->
 @pytest.mark.asyncio
 async def test_auto_tool_execution_claude_single_tool(mock_tool_executor) -> None:
     """Test auto tool execution with Claude provider - single tool call"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
 
@@ -218,7 +218,7 @@ async def test_auto_tool_execution_claude_single_tool(mock_tool_executor) -> Non
 @pytest.mark.asyncio
 async def test_auto_tool_execution_openrouter_with_headers(mock_tool_executor) -> None:
     """Test auto tool execution with OpenRouter provider - preserves custom headers"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
 
@@ -285,7 +285,7 @@ async def test_auto_tool_execution_openrouter_with_headers(mock_tool_executor) -
 @pytest.mark.asyncio
 async def test_auto_tool_execution_max_iterations(mock_tool_executor) -> None:
     """Test auto tool execution respects max_tool_iterations limit"""
-    with patch("llmpy.providers.base.aiosonic.HTTPClient") as MockClient:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()
         MockClient.return_value = mock_client
 
