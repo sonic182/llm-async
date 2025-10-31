@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-10-31
+### Added
+- Makefile for easier launch commands with poetry
+### Changed
+- Updated package metadata in `pyproject.toml`:
+  - Added `readme` field pointing to README.md
+  - Added `license` field (MIT)
+  - Added `repository` URL
+  - Updated author information with correct name and email
+
 ## [0.1.0] - 2025-10-31
 ### Added
 - Initial public release.
@@ -24,5 +34,6 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm_async/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/sonic182/llm_async/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/sonic182/llm_async/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/sonic182/llm_async/releases/tag/v0.1.0

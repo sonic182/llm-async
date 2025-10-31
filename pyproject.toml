@@ -1,8 +1,13 @@
 [tool.poetry]
 name = "llm_async"
-version = "0.1.0"
+version = "0.1.1"
 description = "Multi-LLM Provider Library"
-authors = ["sonic182 <sonic182@example.com>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/sonic182/aiosonic"
+authors = [
+    "Johanderson Mogollon <johander1822@gmail.com>",
+]
 packages = [{include = "llm_async"}]
 
 [tool.poetry.dependencies]
