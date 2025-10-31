@@ -26,7 +26,7 @@ jobs:
       run: poetry install
 
     - name: Lint
-      run: poetry run ruff check llmpy tests
+      run: poetry run ruff check llm_async tests
 
     - name: Test
       run: poetry run pytest
