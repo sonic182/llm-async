@@ -420,7 +420,7 @@ poetry build
 
 ## Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/sonic182/llm_async).
+Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/sonic182/llm-async).
 
 ## License
 
