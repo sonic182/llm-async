@@ -198,7 +198,6 @@ async def main():
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": "What is 15 + 27?"}],
         tools=[calculator_tool],
-        auto_execute_tools=True,
         tool_executor=tool_executor
     )
     print(f"OpenAI: {response}")
@@ -208,7 +207,6 @@ async def main():
         model="claude-3-haiku-20240307",
         messages=[{"role": "user", "content": "What is 15 + 27?"}],
         tools=[calculator_tool],
-        auto_execute_tools=True,
         tool_executor=tool_executor
     )
     print(f"Claude: {response}")
@@ -266,7 +264,6 @@ async def main():
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": "Calculate 15 + 27"}],
             tools=[calculator_tool],
-            auto_execute_tools=True,
             tool_executor={"calculator": calculator},
             pubsub=pubsub  # Enable event emission
         )
@@ -370,7 +367,6 @@ asyncio.run(main())
 
 **Streaming**
 - **Usage**: `async for chunk in await provider.acomplete(..., stream=True):` print or process `chunk` in real time.
-- **Notes**: Tool auto-execution (`auto_execute_tools=True`) is not supported while streaming.
 
 **Example output**
 
