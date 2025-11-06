@@ -44,9 +44,7 @@ def test_tool_dataclass_creation() -> None:
                 stream=False,
                 tools=None,
                 tool_choice=None,
-                auto_execute_tools=False,
                 tool_executor=None,
-                max_tool_iterations=10,
                 **kwargs,
             ) -> Any:
                 return {"tools": tools, "tool_choice": tool_choice}

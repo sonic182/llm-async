@@ -40,30 +40,6 @@ class GoogleProvider(BaseProvider):
 
         super().__init__(api_key, base_url, retry_config)
 
-    def _clean_messages(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        cleaned_messages: list[dict[str, Any]] = []
-        for message in messages:
-            cleaned_message = message.copy()
-            if message.get("role") == "assistant":
-                cleaned_message["role"] = "model"
-            elif message.get("role") == "system":
-                # Google handles system messages separately
-                continue
-            elif message.get("role") == "tool":
-                cleaned_message = {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "tool_result",
-                            "tool_call_id": message.get("tool_call_id", ""),
-                            "name": message.get("name", ""),
-                            "content": message.get("content", ""),
-                        }
-                    ],
-                }
-            cleaned_messages.append(cleaned_message)
-        return cleaned_messages
-
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         formatted_tools = []
         for tool in tools:
@@ -79,7 +55,7 @@ class GoogleProvider(BaseProvider):
         candidates = original.get("candidates", [])
         if not candidates:
             return MainResponse(
-                content=None, tool_calls=None, original_data={"content": None, "tool_calls": None}
+                content=None, tool_calls=None, original_data={"role": "model", "parts": []}
             )
         candidate = candidates[0]
         content_data = candidate.get("content", {})
@@ -101,113 +77,59 @@ class GoogleProvider(BaseProvider):
                         },
                     )
                 )
+        message = {
+            "role": candidate.get("role", "model"),
+            "parts": parts,
+        }
         return MainResponse(
             content=text_content or None,
             tool_calls=tool_calls or None,
-            original_data={
-                "content": text_content or None,
-                "tool_calls": (
-                    [{"id": tc.id, "type": tc.type, "function": tc.function} for tc in tool_calls]
-                    if tool_calls
-                    else None
-                ),
-            },
+            original_data=message,
         )
 
-    def _create_assistant_message_with_tools(self, main_resp: MainResponse) -> dict[str, Any]:
-        if (
-            main_resp.tool_calls
-            and len(main_resp.tool_calls) > 0
-            and main_resp.tool_calls[0].function
-        ):
-            func = main_resp.tool_calls[0].function
-            name = str(func.get("name", ""))
-            args = func.get("arguments")
-            if not isinstance(args, dict):
+    async def execute_tool(
+        self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]
+    ) -> dict[str, Any]:
+        if tool_call.type == "function" and tool_call.function:
+            func_name = tool_call.function.get("name")
+            args = tool_call.function.get("arguments")
+            if isinstance(args, str):
+                import json
+
+                args = json.loads(args)
+            elif not isinstance(args, dict):
                 args = {}
-            return {"role": "model", "parts": [{"functionCall": {"name": name, "args": args}}]}
+            tool_call_id = tool_call.id
+        elif tool_call.type == "tool_use" and tool_call.name:
+            func_name = tool_call.name
+            args = tool_call.input
+            tool_call_id = tool_call.id
         else:
-            return {"role": "model", "parts": [{"text": main_resp.content or ""}]}
+            raise Exception("no tool defined")
 
-    async def _execute_tools(
-        self,
-        tool_calls: list[ToolCall],
-        tool_executor: dict[str, Callable[..., Any]],
-        pubsub: Union[Any, None] = None,
-    ) -> list[dict[str, Any]]:
-        results = []
-        for tool_call in tool_calls:
-            if tool_call.type == "function" and tool_call.function:
-                func_name = tool_call.function.get("name")
-                args = tool_call.function.get("arguments")
-                if isinstance(args, str):
-                    import json
+        if not func_name:
+            raise Exception("no tool defined")
 
-                    args = json.loads(args)
-                elif not isinstance(args, dict):
-                    args = {}
-                tool_call_id = tool_call.id
-            elif tool_call.type == "tool_use" and tool_call.name:
-                func_name = tool_call.name
-                args = tool_call.input
-                tool_call_id = tool_call.id
-            else:
-                continue
+        if func_name not in tools_map:
+            error_msg = f"Tool {func_name} not found in tools_map"
+            raise ValueError(error_msg)
 
-            if not func_name:
-                continue
+        if isinstance(args, dict):
+            result = tools_map[func_name](**args)
+        else:
+            result = tools_map[func_name](args)
 
-            if func_name not in tool_executor:
-                error_msg = f"Tool {func_name} not found in tool_executor"
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.error",
-                        {
-                            "call_id": tool_call_id,
-                            "tool_name": func_name,
-                            "error": error_msg,
-                        },
-                    )
-                raise ValueError(error_msg)
-
-            try:
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.start",
-                        {"call_id": tool_call_id, "tool_name": func_name, "args": args},
-                    )
-
-                if isinstance(args, dict):
-                    result = tool_executor[func_name](**args)
-                else:
-                    result = tool_executor[func_name](args)
-
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.complete",
-                        {"call_id": tool_call_id, "tool_name": func_name, "result": str(result)},
-                    )
-
-                results.append(
-                    {
-                        "role": "tool",
-                        "tool_call_id": tool_call_id,
+        return {
+            "role": "user",
+            "parts": [
+                {
+                    "functionResponse": {
                         "name": func_name,
-                        "content": str(result),
+                        "response": {"result": str(result)},
                     }
-                )
-            except Exception as e:
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.error",
-                        {
-                            "call_id": tool_call_id,
-                            "tool_name": func_name,
-                            "error": str(e),
-                        },
-                    )
-                raise
-        return results
+                }
+            ],
+        }
 
     async def _single_complete(
         self,
@@ -236,7 +158,8 @@ class GoogleProvider(BaseProvider):
         response = await post_json(
             self.client, url, payload, headers, retry_config=self.retry_config
         )
-        return Response(response, self.__class__.name())
+        main_response = self._parse_response(response)
+        return Response(response, self.__class__.name(), main_response)
 
     def _build_request_payload(
         self,

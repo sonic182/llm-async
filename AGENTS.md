@@ -34,6 +34,10 @@ The main package is `llm_async`, managed with Poetry (see `pyproject.toml` for c
   - **UP** (pyupgrade) - Modern Python syntax upgrades
 - **Testing**: pytest-asyncio with AsyncMock for HTTP client mocking
 
+
+## Library Code Style
+- **No comments**: Do not add comments in library code. Keep the codebase clean and self-documenting.
+
 ## Git Command Safety
 - **Do not run any git commands that modify the repository without explicit user approval.**
 - Avoid the following commands unless the user explicitly requests and approves them:

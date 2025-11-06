@@ -68,4 +68,5 @@ class OpenRouterProvider(OpenAIProvider):
             headers,
             retry_config=self.retry_config,
         )
-        return Response(response, self.__class__.name())
+        main_response = self._parse_response(response)
+        return Response(response, self.__class__.name(), main_response)
