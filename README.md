@@ -5,6 +5,7 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
 ## Table of Contents
 
 - [Features](#features)
+  - [Supported Providers & Features](#supported-providers--features)
 - [Installation](#installation)
   - [Using Poetry (Recommended)](#using-poetry-recommended)
   - [Using pip](#using-pip)
@@ -30,6 +31,15 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
 - [Authors](#authors)
 
 ## Features
+
+### Supported Providers & Features
+
+| Feature | OpenAI | Claude | Google Gemini | OpenRouter |
+|---------|--------|--------|---------------|-----------|
+| Chat Completions | ✅ | ✅ | ✅ | ✅ |
+| Tool Calling | ✅ | ✅ | ✅ | ✅ |
+| Streaming | ✅ | ✅ | ✅ | ✅ |
+| Structured Outputs | ✅ | ❌ | ✅ | ✅ |
 
 - **Async-first**: Built with asyncio for high-performance, non-blocking operations.
 - **Provider Support**: Supports OpenAI, Anthropic Claude, Google Gemini, and OpenRouter for chat completions.
