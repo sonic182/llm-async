@@ -23,7 +23,7 @@ class MainResponse:
 class Response:
     original: dict[str, Any]
     provider_name: str
-    main_response: MainResponse
+    main_response: Optional[MainResponse] = None
     stream: bool = False
     stream_generator: Optional[AsyncIterator["StreamChunk"]] = None
 
