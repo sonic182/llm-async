@@ -28,9 +28,6 @@ class BaseProvider:
         stream: bool = False,
         tools: Union[list[Tool], None] = None,
         tool_choice: Union[str, dict[str, Any], None] = None,
-        tool_executor: Union[dict[str, Callable[..., Any]], None] = None,
-        max_tool_iterations: int = 10,
-        pubsub: Union[Any, None] = None,
         **kwargs: Any,
     ) -> Response:
         return await self._single_complete(model, messages, stream, tools, tool_choice, **kwargs)
@@ -62,11 +59,8 @@ class BaseProvider:
         """Create an assistant message with tool calls in the format expected by this provider."""
         raise NotImplementedError
 
-    async def _execute_tools(
-        self,
-        tool_calls: list[ToolCall],
-        tool_executor: dict[str, Callable[..., Any]],
-        pubsub: Union[Any, None] = None,
+    async def execute_tool(
+        self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]
     ) -> list[dict[str, Any]]:
         """Execute tools and return results in provider-specific format."""
         raise NotImplementedError

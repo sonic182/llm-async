@@ -66,20 +66,14 @@ class ClaudeProvider(BaseProvider):
                 )
             elif "text" in block:
                 text_content += block.get("text", "")
+        message = {
+            "role": original.get("role", "assistant"),
+            "content": content_blocks,
+        }
         return MainResponse(
             content=text_content or None,
             tool_calls=tool_calls or None,
-            original_data={
-                "content": text_content or None,
-                "tool_calls": (
-                    [
-                        {"id": tc.id, "type": tc.type, "name": tc.name, "input": tc.input}
-                        for tc in tool_calls
-                    ]
-                    if tool_calls
-                    else None
-                ),
-            },
+            original_data=message,
         )
 
     def _create_assistant_message_with_tools(self, main_resp: MainResponse) -> dict[str, Any]:
@@ -93,89 +87,48 @@ class ClaudeProvider(BaseProvider):
                 )
         return {"role": "assistant", "content": content_blocks}
 
-    async def _execute_tools(
-        self,
-        tool_calls: list[ToolCall],
-        tool_executor: dict[str, Callable[..., Any]],
-        pubsub: Union[Any, None] = None,
-    ) -> list[dict[str, Any]]:
-        results = []
-        for tool_call in tool_calls:
-            if tool_call.type == "function" and tool_call.function:
-                func_name = tool_call.function.get("name")
-                args = tool_call.function.get("arguments")
-                if isinstance(args, str):
-                    import json
+    async def execute_tool(
+        self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]
+    ) -> dict[str, Any]:
+        if tool_call.type == "tool_use" and tool_call.name:
+            func_name = tool_call.name
+            args = tool_call.input
+            tool_call_id = tool_call.id
+        elif tool_call.type == "function" and tool_call.function:
+            func_name = tool_call.function.get("name")
+            args = tool_call.function.get("arguments")
+            if isinstance(args, str):
+                import json
 
-                    args = json.loads(args)
-                elif not isinstance(args, dict):
-                    args = {}
-                tool_call_id = tool_call.id
-            elif tool_call.type == "tool_use" and tool_call.name:
-                func_name = tool_call.name
-                args = tool_call.input
-                tool_call_id = tool_call.id
-            else:
-                continue
+                args = json.loads(args)
+            elif not isinstance(args, dict):
+                args = {}
+            tool_call_id = tool_call.id
+        else:
+            raise Exception("no tool defined")
 
-            if not func_name:
-                continue
+        if not func_name:
+            raise Exception("no tool defined")
 
-            if func_name not in tool_executor:
-                error_msg = f"Tool {func_name} not found in tool_executor"
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.error",
-                        {
-                            "call_id": tool_call_id,
-                            "tool_name": func_name,
-                            "error": error_msg,
-                        },
-                    )
-                raise ValueError(error_msg)
+        if func_name not in tools_map:
+            error_msg = f"Tool {func_name} not found in tools_map"
+            raise ValueError(error_msg)
 
-            try:
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.start",
-                        {"call_id": tool_call_id, "tool_name": func_name, "args": args},
-                    )
+        if isinstance(args, dict):
+            result = tools_map[func_name](**args)
+        else:
+            result = tools_map[func_name](args)
 
-                if isinstance(args, dict):
-                    result = tool_executor[func_name](**args)
-                else:
-                    result = tool_executor[func_name](args)
-
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.complete",
-                        {"call_id": tool_call_id, "tool_name": func_name, "result": str(result)},
-                    )
-
-                results.append(
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": tool_call_id,
-                                "content": str(result),
-                            }
-                        ],
-                    }
-                )
-            except Exception as e:
-                if pubsub:
-                    await pubsub.publish(
-                        f"tools.{self.name()}.{func_name}.error",
-                        {
-                            "call_id": tool_call_id,
-                            "tool_name": func_name,
-                            "error": str(e),
-                        },
-                    )
-                raise
-        return results
+        return {
+            "role": "user",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": tool_call_id,
+                    "content": str(result),
+                }
+            ],
+        }
 
     async def _single_complete(
         self,
@@ -227,4 +180,5 @@ class ClaudeProvider(BaseProvider):
                 headers,
                 retry_config=self.retry_config,
             )
-            return Response(response, self.__class__.name())
+            main_response = self._parse_response(response)
+            return Response(response, self.__class__.name(), main_response)
