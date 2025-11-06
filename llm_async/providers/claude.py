@@ -19,29 +19,6 @@ class ClaudeProvider(BaseProvider):
     ):
         super().__init__(api_key, base_url, retry_config)
 
-    def _clean_messages(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        cleaned_messages: list[dict[str, Any]] = []
-        for message in messages:
-            cleaned_message = message.copy()
-            if message["role"] == "tool":
-                if isinstance(message.get("content"), str):
-                    cleaned_message = {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": message.get("tool_call_id", ""),
-                                "content": message["content"],
-                            }
-                        ],
-                    }
-                elif isinstance(message.get("content"), list):
-                    cleaned_message["role"] = "user"
-            elif message["role"] not in ["user", "assistant", "system"]:
-                continue
-            cleaned_messages.append(cleaned_message)
-        return cleaned_messages
-
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         return [
             {"name": tool.name, "description": tool.description, "input_schema": tool.input_schema}
@@ -75,17 +52,6 @@ class ClaudeProvider(BaseProvider):
             tool_calls=tool_calls or None,
             original_data=message,
         )
-
-    def _create_assistant_message_with_tools(self, main_resp: MainResponse) -> dict[str, Any]:
-        content_blocks = []
-        if main_resp.content:
-            content_blocks.append({"type": "text", "text": main_resp.content})
-        if main_resp.tool_calls:
-            for tc in main_resp.tool_calls:
-                content_blocks.append(
-                    {"type": "tool_use", "id": tc.id, "name": tc.name, "input": tc.input}
-                )
-        return {"role": "assistant", "content": content_blocks}
 
     async def execute_tool(
         self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]

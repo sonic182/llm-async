@@ -43,20 +43,12 @@ class BaseProvider:
     ) -> Response:
         raise NotImplementedError
 
-    def _clean_messages(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        """Clean messages to be compatible with the current provider."""
-        raise NotImplementedError
-
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         """Format tools for the current provider."""
         raise NotImplementedError
 
     def _parse_response(self, original: dict[str, Any]) -> MainResponse:
         """Parse provider response into standard format."""
-        raise NotImplementedError
-
-    def _create_assistant_message_with_tools(self, main_resp: MainResponse) -> dict[str, Any]:
-        """Create an assistant message with tool calls in the format expected by this provider."""
         raise NotImplementedError
 
     async def execute_tool(

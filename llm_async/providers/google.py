@@ -40,30 +40,6 @@ class GoogleProvider(BaseProvider):
 
         super().__init__(api_key, base_url, retry_config)
 
-    def _clean_messages(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        cleaned_messages: list[dict[str, Any]] = []
-        for message in messages:
-            cleaned_message = message.copy()
-            if message.get("role") == "assistant":
-                cleaned_message["role"] = "model"
-            elif message.get("role") == "system":
-                # Google handles system messages separately
-                continue
-            elif message.get("role") == "tool":
-                cleaned_message = {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "tool_result",
-                            "tool_call_id": message.get("tool_call_id", ""),
-                            "name": message.get("name", ""),
-                            "content": message.get("content", ""),
-                        }
-                    ],
-                }
-            cleaned_messages.append(cleaned_message)
-        return cleaned_messages
-
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         formatted_tools = []
         for tool in tools:
@@ -110,21 +86,6 @@ class GoogleProvider(BaseProvider):
             tool_calls=tool_calls or None,
             original_data=message,
         )
-
-    def _create_assistant_message_with_tools(self, main_resp: MainResponse) -> dict[str, Any]:
-        if (
-            main_resp.tool_calls
-            and len(main_resp.tool_calls) > 0
-            and main_resp.tool_calls[0].function
-        ):
-            func = main_resp.tool_calls[0].function
-            name = str(func.get("name", ""))
-            args = func.get("arguments")
-            if not isinstance(args, dict):
-                args = {}
-            return {"role": "model", "parts": [{"functionCall": {"name": name, "args": args}}]}
-        else:
-            return {"role": "model", "parts": [{"text": main_resp.content or ""}]}
 
     async def execute_tool(
         self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]

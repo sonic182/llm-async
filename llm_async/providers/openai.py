@@ -17,10 +17,6 @@ class OpenAIProvider(BaseProvider):
     ):
         super().__init__(api_key, base_url, retry_config)
 
-    def _clean_messages(self, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        # OpenAI/OpenRouter support 'tool' role
-        return messages
-
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         return [
             {
@@ -47,21 +43,6 @@ class OpenAIProvider(BaseProvider):
         return MainResponse(
             content=message.get("content"), tool_calls=tool_calls, original_data=message
         )
-
-    def _create_assistant_message_with_tools(self, main_resp: MainResponse) -> dict[str, Any]:
-        tool_calls_dict = (
-            [
-                {"id": tc.id, "type": tc.type, "function": tc.function}
-                for tc in (main_resp.tool_calls or [])
-            ]
-            if main_resp.tool_calls
-            else []
-        )
-        return {
-            "role": "assistant",
-            "content": main_resp.content or "",
-            "tool_calls": tool_calls_dict,
-        }
 
     async def execute_tool(
         self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]

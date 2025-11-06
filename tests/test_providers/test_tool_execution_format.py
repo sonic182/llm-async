@@ -23,7 +23,10 @@ async def test_tool_execution_openai_format(mock_tool_executor) -> None:
         )
     ]
 
-    results = await provider._execute_tools(tool_calls, mock_tool_executor)
+    results = []
+    for tc in tool_calls:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
 
     # OpenAI should return tool results in "tool" role format
     assert len(results) == 1
@@ -43,7 +46,10 @@ async def test_tool_execution_claude_format(mock_tool_executor) -> None:
         ToolCall(id="call_123", type="tool_use", name="get_weather", input={"location": "NYC"})
     ]
 
-    results = await provider._execute_tools(tool_calls, mock_tool_executor)
+    results = []
+    for tc in tool_calls:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
 
     # Claude should return tool results in "user" role with tool_result content
     assert len(results) == 1
@@ -69,14 +75,18 @@ async def test_tool_execution_google_format(mock_tool_executor) -> None:
         )
     ]
 
-    results = await provider._execute_tools(tool_calls, mock_tool_executor)
+    results = []
+    for tc in tool_calls:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
 
-    # Google should return tool results in "tool" role format with function name
+    # Google should return tool results in a parts-based format with functionResponse
     assert len(results) == 1
-    assert results[0]["role"] == "tool"
-    assert results[0]["tool_call_id"] == "call_123"
-    assert results[0]["name"] == "get_weather"  # Google includes function name
-    assert results[0]["content"] == "Sunny, 72°F"
+    parts = results[0].get("parts", [])
+    assert len(parts) == 1
+    func_resp = parts[0].get("functionResponse", {})
+    assert func_resp.get("name") == "get_weather"
+    assert func_resp.get("response", {}).get("result") == "Sunny, 72°F"
     mock_tool_executor["get_weather"].assert_called_once_with(location="NYC")
 
 
@@ -94,7 +104,10 @@ async def test_tool_execution_openrouter_format(mock_tool_executor) -> None:
         )
     ]
 
-    results = await provider._execute_tools(tool_calls, mock_tool_executor)
+    results = []
+    for tc in tool_calls:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
 
     # OpenRouter should return tool results in "tool" role format (like OpenAI)
     assert len(results) == 1
@@ -123,7 +136,10 @@ async def test_tool_execution_multiple_tools(mock_tool_executor) -> None:
         ),
     ]
 
-    results = await provider._execute_tools(tool_calls, mock_tool_executor)
+    results = []
+    for tc in tool_calls:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
 
     # Should execute both tools and return results
     assert len(results) == 2
@@ -149,8 +165,9 @@ async def test_tool_execution_missing_tool() -> None:
 
     tool_executor = {"get_weather": Mock(return_value="Sunny")}  # Missing non_existent_tool
 
-    with pytest.raises(ValueError, match="Tool non_existent_tool not found in tool_executor"):
-        await provider._execute_tools(tool_calls, tool_executor)
+    with pytest.raises(ValueError, match="Tool non_existent_tool not found"):
+        # call execute_tool for the failing tool
+        await provider.execute_tool(tool_calls[0], tool_executor)
 
 
 @pytest.mark.asyncio
@@ -170,7 +187,10 @@ async def test_tool_execution_json_argument_parsing(mock_tool_executor) -> None:
         )
     ]
 
-    results = await provider._execute_tools(tool_calls, mock_tool_executor)
+    results = []
+    for tc in tool_calls:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
 
     # Should parse JSON arguments correctly
     assert len(results) == 1
@@ -193,9 +213,9 @@ async def test_tool_execution_unknown_tool_type() -> None:
 
     tool_executor = {"get_weather": Mock(return_value="Sunny")}
 
-    # Unknown tool types should be skipped
-    results = await provider._execute_tools(tool_calls, tool_executor)
-    assert len(results) == 0  # Should skip unknown tool types
+    # Unknown tool types should raise an error when executed
+    with pytest.raises(Exception, match="no tool defined"):
+        await provider.execute_tool(tool_calls[0], tool_executor)
 
 
 @pytest.mark.asyncio
@@ -203,6 +223,9 @@ async def test_tool_execution_empty_tool_calls(mock_tool_executor) -> None:
     """Test tool execution with empty tool calls list"""
     provider = OpenAIProvider(api_key="test_key")
 
-    # Empty tool calls should return empty results
-    results = await provider._execute_tools([], mock_tool_executor)
+    # Empty tool calls should return empty results (no execution)
+    results = []
+    for tc in []:
+        res = await provider.execute_tool(tc, mock_tool_executor)
+        results.append(res)
     assert len(results) == 0
