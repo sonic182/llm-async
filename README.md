@@ -15,7 +15,6 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
     - [Google Gemini](#google-gemini)
   - [Custom Base URL](#custom-base-url)
   - [Tool Usage](#tool-usage)
-  - [Pub/Sub Events for Tool Execution](#pubsub-events-for-tool-execution)
   - [Structured Outputs](#structured-outputs)
 - [API Reference](#api-reference)
   - [OpenAIProvider](#openaiprovider)
@@ -34,7 +33,7 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
 
 - **Async-first**: Built with asyncio for high-performance, non-blocking operations.
 - **Provider Support**: Supports OpenAI, Anthropic Claude, Google Gemini, and OpenRouter for chat completions.
-- **Tool Calling**: Automatic tool execution with unified tool definitions across providers.
+- **Tool Calling**: Tool execution with unified tool definitions across providers.
 - **Structured Outputs**: Enforce JSON schema validation on responses (OpenAI, Google, OpenRouter).
 - **Extensible**: Easy to add new providers by inheriting from `BaseProvider`.
 - **Tested**: Comprehensive test suite with high coverage.
@@ -144,10 +143,11 @@ provider = OpenAIProvider(
 
 ```python
 import asyncio
+import os
 from llm_async.models import Tool
-from llm_async.providers import OpenAIProvider, ClaudeProvider
+from llm_async.providers import OpenAIProvider
 
-# Define a calculator tool that works with both providers
+# Define a calculator tool
 calculator_tool = Tool(
     name="calculator",
     description="Perform basic arithmetic operations",
@@ -181,114 +181,47 @@ def calculator(operation: str, a: float, b: float) -> float:
     """Calculator function that can be called by the LLM."""
     if operation == "add":
         return a + b
+    elif operation == "subtract":
+        return a - b
     elif operation == "multiply":
         return a * b
-    # ... other operations
+    elif operation == "divide":
+        return a / b
+    return 0
 
 async def main():
-    # Initialize providers
-    openai = OpenAIProvider(api_key="your-openai-key")
-    claude = ClaudeProvider(api_key="your-anthropic-key")
+    # Initialize provider
+    provider = OpenAIProvider(api_key=os.getenv("OPENAI_API_KEY"))
     
-    # Tool executor
-    tool_executor = {"calculator": calculator}
+    # Tool executor mapping
+    tools_map = {"calculator": calculator}
     
-    # Use the same tool with OpenAI
-    response = await openai.acomplete(
+    # Initial user message
+    messages = [{"role": "user", "content": "What is 15 + 27?"}]
+    
+    # First turn: Ask the LLM to perform a calculation
+    response = await provider.acomplete(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": "What is 15 + 27?"}],
-        tools=[calculator_tool],
-        tool_executor=tool_executor
+        messages=messages,
+        tools=[calculator_tool]
     )
-    print(f"OpenAI: {response}")
     
-    # Use the same tool with Claude
-    response = await claude.acomplete(
-        model="claude-3-haiku-20240307",
-        messages=[{"role": "user", "content": "What is 15 + 27?"}],
-        tools=[calculator_tool],
-        tool_executor=tool_executor
+    # Execute the tool call
+    tool_call = response.main_response.tool_calls[0]
+    tool_result = await provider.execute_tool(tool_call, tools_map)
+    
+    # Second turn: Send the tool result back to the LLM
+    messages_with_tool = messages + [response.main_response.original_data] + [tool_result]
+    
+    final_response = await provider.acomplete(
+        model="gpt-4o-mini",
+        messages=messages_with_tool
     )
-    print(f"Claude: {response}")
+    
+    print(final_response.main_response.content)  # Output: The final answer
 
 asyncio.run(main())
 ```
-
-### Pub/Sub Events for Tool Execution
-
-llm_async supports real-time event emission during tool execution via a pub/sub system. This allows you to monitor tool progress, handle errors, and build interactive UIs for agentic workflows.
-
-Events are emitted for each tool call with topics like `tools.{provider}.{tool_name}.{status}` where status is `start`, `complete`, or `error`.
-
-#### Basic Usage
-
-```python
-import asyncio
-from llm_async import OpenAIProvider
-from llm_async.pubsub import LocalQueueBackend, PubSub
-from llm_async.models import Tool
-
-# Define your tool (same as above)
-calculator_tool = Tool(...)  # See Tool Usage example
-
-def calculator(operation: str, a: float, b: float) -> float:
-    # Implementation
-    pass
-
-async def event_monitor(pubsub: PubSub):
-    """Monitor tool execution events."""
-    print("📡 Monitoring tool events...")
-    async for event in pubsub.subscribe("tools.*"):
-        topic = event.topic
-        payload = event.payload
-        
-        if "start" in topic:
-            print(f"⏱️  STARTED: {payload.get('tool_name')} with args {payload.get('args')}")
-        elif "complete" in topic:
-            print(f"✅ COMPLETED: {payload.get('tool_name')} -> {payload.get('result')}")
-        elif "error" in topic:
-            print(f"❌ ERROR: {payload.get('tool_name')} - {payload.get('error')}")
-
-async def main():
-    # Setup pub/sub
-    backend = LocalQueueBackend()
-    pubsub = PubSub(backend)
-    
-    # Start monitoring in background
-    monitor_task = asyncio.create_task(event_monitor(pubsub))
-    
-    try:
-        provider = OpenAIProvider(api_key="your-openai-key")
-        
-        response = await provider.acomplete(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "Calculate 15 + 27"}],
-            tools=[calculator_tool],
-            tool_executor={"calculator": calculator},
-            pubsub=pubsub  # Enable event emission
-        )
-        
-        print(f"\n🤖 Final Response: {response.main_response.content}")
-    finally:
-        await asyncio.sleep(0.2)  # Allow final events
-        await pubsub.close()
-        monitor_task.cancel()
-
-asyncio.run(main())
-```
-
-#### Event Payloads
-
-- **Start**: `{"call_id": str, "tool_name": str, "args": dict}`
-- **Complete**: `{"call_id": str, "tool_name": str, "result": str}`
-- **Error**: `{"call_id": str, "tool_name": str, "error": str}`
-
-#### Backend Options
-
-- **LocalQueueBackend**: In-memory asyncio queues (default, for single-process)
-- Future backends: Redis, RabbitMQ (extensible via `PubSubBackend`)
-
-
 
 
 ### Structured Outputs
