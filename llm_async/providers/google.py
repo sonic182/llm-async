@@ -99,11 +99,9 @@ class GoogleProvider(BaseProvider):
                 args = json.loads(args)
             elif not isinstance(args, dict):
                 args = {}
-            tool_call_id = tool_call.id
         elif tool_call.type == "tool_use" and tool_call.name:
             func_name = tool_call.name
             args = tool_call.input
-            tool_call_id = tool_call.id
         else:
             raise Exception("no tool defined")
 
