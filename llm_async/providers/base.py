@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Literal, Optional, Union
 
 import aiosonic  # type: ignore[import-untyped]
 
@@ -66,6 +66,52 @@ class BaseProvider:
     ) -> dict[str, Any]:
         """Execute tools and return results in provider-specific format."""
         raise NotImplementedError
+
+    async def request(
+        self,
+        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"],
+        path: str,
+        json_data: Optional[dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Make a request to the provider's API.
+
+        Args:
+            method: HTTP method (GET, POST, PUT, DELETE, PATCH)
+            path: API endpoint path (e.g., "/v1/models")
+            json_data: JSON body for POST/PUT/PATCH requests
+            **kwargs: Additional headers to include
+
+        Returns:
+            The JSON response from the API
+        """
+        import json
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            **kwargs,
+        }
+        url = f"{self.base_url}{path}"
+
+        if method == "GET":
+            response = await self.client.get(url, headers=headers)
+        elif method == "POST":
+            response = await self.client.post(url, headers=headers, json=json_data or {})
+        elif method == "PUT":
+            response = await self.client.put(url, headers=headers, json=json_data or {})
+        elif method == "DELETE":
+            response = await self.client.delete(url, headers=headers)
+        elif method == "PATCH":
+            response = await self.client.patch(url, headers=headers, json=json_data or {})
+        else:
+            raise ValueError(f"Unsupported HTTP method: {method}")
+
+        if isinstance(response, dict):
+            return response
+
+        text = await response.text()
+        return json.loads(text)
 
     async def _http_post(self, endpoint: str, data: dict[str, Any]) -> dict[str, Any]:
         headers = {

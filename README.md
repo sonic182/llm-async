@@ -23,6 +23,7 @@ High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and 
     - [OpenRouter](#openrouter)
     - [Google Gemini](#google-gemini)
   - [Custom Base URL](#custom-base-url)
+  - [Direct API Requests](#direct-api-requests)
   - [Tool Usage](#tool-usage)
   - [Structured Outputs](#structured-outputs)
   - [OpenAI Responses API with Prompt Caching](#openai-responses-api-with-prompt-caching)
@@ -187,6 +188,38 @@ provider = OpenAIProvider(
     base_url="https://custom-openai-endpoint.com/v1"
 )
 ```
+
+### Direct API Requests
+
+Make direct requests to any provider API endpoint using the `request()` method:
+
+```python
+import asyncio
+import os
+from llm_async import OpenAIProvider
+
+async def main():
+    provider = OpenAIProvider(api_key=os.getenv("OPENAI_API_KEY"))
+    
+    # GET request to list available models
+    response = await provider.request("GET", "/models")
+    
+    print(f"Available models: {len(response.get('data', []))}")
+    for model in response.get("data", [])[:5]:
+        print(f"  - {model.get('id')}")
+    
+    # POST request with custom data
+    response = await provider.request("POST", "/endpoint", json_data={"key": "value"})
+    
+    # Add custom headers
+    response = await provider.request("GET", "/endpoint", custom_header="value")
+
+asyncio.run(main())
+```
+
+The `request()` method supports all HTTP verbs: GET, POST, PUT, DELETE, PATCH. It works across all providers (OpenAI, Claude, Google, OpenRouter, OpenAIResponses).
+
+See `examples/provider_request.py` for a complete example.
 
 ### Tool Usage
 
