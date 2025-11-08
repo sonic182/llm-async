@@ -70,7 +70,7 @@ Notes:
 ### Using Poetry (Recommended)
 
 ```bash
-poetry add llm_async
+poetry add llm-async
 ```
 
 ### Using pip
