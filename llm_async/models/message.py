@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 from llm_async.models.tool_call import ToolCall
 
 Role = Literal["system", "user", "assistant", "tool"]
-Content = Union[str, list[dict[str, Any]]]
+Content = str | list[dict[str, Any]]
 _ALLOWED_ROLES: tuple[Role, ...] = ("system", "user", "assistant", "tool")
 
 
@@ -13,11 +15,11 @@ _ALLOWED_ROLES: tuple[Role, ...] = ("system", "user", "assistant", "tool")
 class Message:
     role: Role
     content: Content
-    tool_calls: Optional[list[ToolCall]] = None
-    original: Optional[dict[str, Any]] = field(default=None)
+    tool_calls: list[ToolCall] | None = None
+    original: dict[str, Any] | None = field(default=None)
 
 
-def normalize_messages(messages: Sequence[Union["Message", Mapping[str, Any]]]) -> list["Message"]:
+def normalize_messages(messages: Sequence[Message | Mapping[str, Any]]) -> list[Message]:
     normalized: list[Message] = []
     for message in messages:
         if isinstance(message, Message):
@@ -46,7 +48,7 @@ def normalize_messages(messages: Sequence[Union["Message", Mapping[str, Any]]]) 
         else:
             raise TypeError("Content must be str or list of mappings")
         tool_calls = _coerce_tool_calls(message.get("tool_calls"))
-        original_payload: Optional[dict[str, Any]] = dict(message)
+        original_payload: dict[str, Any] | None = dict(message)
         inner_original = original_payload.pop("original", None)
         if isinstance(inner_original, Mapping):
             original_payload = dict(inner_original)
@@ -61,7 +63,7 @@ def normalize_messages(messages: Sequence[Union["Message", Mapping[str, Any]]]) 
     return normalized
 
 
-def validate_messages(messages: Sequence["Message"]) -> None:
+def validate_messages(messages: Sequence[Message]) -> None:
     for message in messages:
         if message.role not in _ALLOWED_ROLES:
             raise ValueError("Invalid role on Message instance")
@@ -77,7 +79,7 @@ def validate_messages(messages: Sequence["Message"]) -> None:
                 raise TypeError("tool_calls entries must be ToolCall instances")
 
 
-def _coerce_tool_calls(value: Any) -> Optional[list[ToolCall]]:
+def _coerce_tool_calls(value: Any) -> list[ToolCall] | None:
     if value is None:
         return None
     if isinstance(value, ToolCall):

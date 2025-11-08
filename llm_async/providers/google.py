@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 from llm_async.models import Message, Response, Tool
 from llm_async.models.tool_call import ToolCall
@@ -13,8 +14,8 @@ class GoogleProvider(BaseProvider):
         self,
         api_key: str = "",
         base_url: str = "",
-        vertex_config: Optional[dict[str, Any]] = None,
-        retry_config: Optional[RetryConfig] = None,
+        vertex_config: dict[str, Any] | None = None,
+        retry_config: RetryConfig | None = None,
     ):
         """Google Provider supporting both Google AI API and Vertex AI.
 
@@ -142,8 +143,8 @@ class GoogleProvider(BaseProvider):
         model: str,
         messages: list[dict[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         """Send completion request to Google's Gemini API."""
@@ -170,7 +171,7 @@ class GoogleProvider(BaseProvider):
     def _build_request_payload(
         self,
         messages: list[dict[str, Any]],
-        tools: Union[list[Tool], None],
+        tools: list[Tool] | None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Build the request payload for Google's Gemini API."""

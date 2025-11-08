@@ -11,7 +11,7 @@ keywords = ["llm", "asyncio", "ai", "openai", "anthropic", "claude", "gemini", "
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
   "License :: OSI Approved :: MIT License",
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Libraries",
@@ -29,7 +29,7 @@ packages = [{include = "llm_async"}]
 "Changelog" = "https://github.com/sonic182/llm-async/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 aiosonic = "*"
 
 [tool.poetry.group.dev.dependencies]
@@ -52,7 +52,7 @@ line-length = 99
 
 [tool.ruff]
 line-length = 99
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [

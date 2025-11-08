@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- **OpenAIResponsesProvider**: New provider for OpenAI's Responses API with advanced features:
+  - Stateless multi-turn conversations using `previous_response_id` to reference prior responses without resending full message history
+  - Support for OpenAI's `prompt_cache_key` parameter for session-based prompt caching
+  - Extended `ToolCall` model with helper methods: `to_responses_api_message()`, `from_responses_api_function_call()`, `function_call_output()`
+  - Custom message normalization for Responses API format (uses `type` field instead of `role` for tool calls and outputs)
+- Examples demonstrating stateless conversations:
+  - `examples/openai_responses_tool_call.py`: Full message history approach
+  - `examples/openai_responses_tool_call_with_previous_id.py`: Stateless multi-turn conversation (weather tool example)
+- Documentation in README.md explaining Responses API advantages and stateless conversation patterns
+- **Generic request method**: Added `async request(method, path, json_data=None, **kwargs)` to `BaseProvider`:
+  - Allows direct API calls to any endpoint (GET, POST, PUT, DELETE, PATCH)
+  - Works across all providers (OpenAI, Claude, Google, OpenRouter, OpenAIResponses)
+  - Example: `await provider.request("GET", "/models")` to list available models
+  - See `examples/provider_request.py` for usage example
 
 ## [0.3.0] - 2025-11-08
 ### Added

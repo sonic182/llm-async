@@ -1,8 +1,8 @@
 import asyncio
 import random
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import wraps
-from typing import Callable, Optional
 
 from aiosonic.exceptions import (
     BaseTimeout,
@@ -44,8 +44,8 @@ class RetryConfig:
 
 
 def retry_async(
-    config: Optional[RetryConfig] = None,
-    on_retry: Optional[Callable[[int, Exception], None]] = None,
+    config: RetryConfig | None = None,
+    on_retry: Callable[[int, Exception], None] | None = None,
 ):
     """Decorator for adding retry logic to async functions."""
     _config = config or RetryConfig()
@@ -53,7 +53,7 @@ def retry_async(
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            last_exception: Optional[Exception] = None
+            last_exception: Exception | None = None
 
             for attempt in range(_config.max_attempts):
                 try:
@@ -99,8 +99,8 @@ def retry_async(
 
 
 def retry_http(
-    config: Optional[RetryConfig] = None,
-    on_retry: Optional[Callable[[int, Exception], None]] = None,
+    config: RetryConfig | None = None,
+    on_retry: Callable[[int, Exception], None] | None = None,
 ):
     """Decorator for adding HTTP-specific retry logic to async functions.
 
@@ -111,7 +111,7 @@ def retry_http(
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            last_exception: Optional[Exception] = None
+            last_exception: Exception | None = None
 
             for attempt in range(_config.max_attempts):
                 try:
