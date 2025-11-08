@@ -25,6 +25,7 @@ High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and 
   - [Custom Base URL](#custom-base-url)
   - [Tool Usage](#tool-usage)
   - [Structured Outputs](#structured-outputs)
+  - [OpenAI Responses API with Prompt Caching](#openai-responses-api-with-prompt-caching)
 - [API Reference](#api-reference)
   - [OpenAIProvider](#openaiprovider)
   - [OpenRouterProvider](#openrouterprovider)
@@ -331,6 +332,93 @@ asyncio.run(main())
 ```
 
 **Supported Providers**: OpenAI, Google Gemini, OpenRouter. Claude does not support structured outputs.
+
+### OpenAI Responses API with Prompt Caching
+
+The OpenAI Responses API provides stateless conversation state management using `previous_response_id` and prompt caching with `prompt_cache_key`. This enables efficient multi-turn conversations without maintaining conversation history on the client side.
+
+```python
+import asyncio
+import uuid
+from llm_async.models import Tool
+from llm_async.models.message import Message
+from llm_async.providers import OpenAIResponsesProvider
+
+# Define a calculator tool
+calculator_tool = Tool(
+    name="calculator",
+    description="Perform basic arithmetic operations",
+    parameters={
+        "type": "object",
+        "properties": {
+            "operation": {"type": "string", "enum": ["add", "subtract", "multiply", "divide"]},
+            "a": {"type": "number"},
+            "b": {"type": "number"}
+        },
+        "required": ["operation", "a", "b"]
+    }
+)
+
+def calculator(operation: str, a: float, b: float) -> float:
+    if operation == "add":
+        return a + b
+    elif operation == "subtract":
+        return a - b
+    elif operation == "multiply":
+        return a * b
+    elif operation == "divide":
+        return a / b
+    return 0
+
+async def main():
+    provider = OpenAIResponsesProvider(api_key="your-openai-api-key")
+    
+    # Generate a session ID for prompt caching
+    session_id = uuid.uuid4().hex
+    
+    # First turn: Ask the model to use a tool
+    response = await provider.acomplete(
+        model="gpt-4.1",
+        messages=[Message("user", "What is 15 + 27? Use the calculator tool.")],
+        tools=[calculator_tool],
+        tool_choice="required",
+        prompt_cache_key=session_id,  # Enable prompt caching for this session
+    )
+    
+    # Execute the tool locally
+    tool_call = response.main_response.tool_calls[0]
+    tool_result = await provider.execute_tool(tool_call, {"calculator": calculator})
+    
+    # Second turn: Continue conversation using previous_response_id
+    # No need to send the entire conversation history - just the response ID and new tool output
+    final_response = await provider.acomplete(
+        model="gpt-4.1",
+        messages=[tool_result],  # Send tool result as message
+        tools=[calculator_tool],
+        previous_response_id=response.original["id"],  # Reference the previous response
+        prompt_cache_key=session_id,  # Reuse the cached prompt
+    )
+    
+    print(final_response.main_response.content)  # Output: The final answer with calculation result
+
+asyncio.run(main())
+```
+
+**Key Benefits**:
+- **No history overhead**: Use `previous_response_id` to continue conversations without resending message history
+- **Prompt caching**: Pass `prompt_cache_key` to reuse cached prompts across requests in the same session
+- **Reduced costs**: Cached prefixes consume 90% fewer tokens
+- **Lower latency**: Cached prefixes are processed faster
+- **Session management**: Clients control session IDs (e.g., `uuid.uuid4().hex`) for cache routing
+
+**How it works**:
+1. First request establishes a response context and caches the prompt prefix (for prompts ≥1024 tokens)
+2. Subsequent requests reference the first response via `previous_response_id` 
+3. Using the same `prompt_cache_key` routes requests to the same machine for consistent cache hits
+4. Only send new content (tool outputs, user messages) instead of full conversation history
+5. Cached prefixes remain active for 5-10 minutes of inactivity (up to 1 hour off-peak)
+
+**See also**: `examples/openai_responses_tool_call_with_previous_id.py` for a complete working example.
 
 ## Why llm_async?
 - Async-first performance (aiosonic-based) vs. sync or heavier HTTP stacks.
