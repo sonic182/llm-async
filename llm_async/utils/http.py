@@ -2,7 +2,7 @@ import asyncio
 import json
 import random
 from collections.abc import AsyncIterator
-from typing import Any, Optional
+from typing import Any
 
 import aiosonic  # type: ignore[import-untyped]
 
@@ -29,7 +29,7 @@ async def post_json(
     url: str,
     json_data: dict[str, Any],
     headers: dict[str, str],
-    retry_config: Optional[object] = None,
+    retry_config: object | None = None,
 ) -> dict[str, Any]:
     """POST JSON with optional retry logic.
 
@@ -69,7 +69,7 @@ async def stream_json(
     url: str,
     json_data: dict[str, Any],
     headers: dict[str, str],
-    retry_config: Optional[RetryConfig] = RetryConfig(),
+    retry_config: RetryConfig | None = RetryConfig(),
 ) -> AsyncIterator[dict[str, Any]]:
     """POST `json_data` to `url` and yield parsed JSON objects from SSE-style stream.
 
@@ -82,7 +82,7 @@ async def stream_json(
         yield {}
         return
 
-    last_exc: Optional[Exception] = None
+    last_exc: Exception | None = None
     response = None
 
     # Handle case where retry_config might be None by creating default instance
@@ -182,7 +182,7 @@ async def stream_json(
                     continue
 
 
-def parse_stream_chunk(chunk: dict[str, Any], provider: str) -> Optional[StreamChunk]:
+def parse_stream_chunk(chunk: dict[str, Any], provider: str) -> StreamChunk | None:
     """Extract textual content from a streaming chunk for a given provider.
 
     Returns a StreamChunk holding textual content and the original chunk, or None

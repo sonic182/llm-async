@@ -1,5 +1,5 @@
-from collections.abc import Mapping, Sequence
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any
 
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response import StreamChunk
@@ -11,7 +11,7 @@ from .base import BaseProvider
 
 
 def _normalize_responses_messages(
-    messages: Sequence[Union[Message, Mapping[str, Any]]],
+    messages: Sequence[Message | Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
     normalized: list[dict[str, Any]] = []
     for message in messages:
@@ -44,17 +44,17 @@ class OpenAIResponsesProvider(BaseProvider):
         self,
         api_key: str,
         base_url: str = "https://api.openai.com/v1",
-        retry_config: Optional[RetryConfig] = None,
+        retry_config: RetryConfig | None = None,
     ):
         super().__init__(api_key, base_url, retry_config)
 
     async def acomplete(
         self,
         model: str,
-        messages: Sequence[Union[Message, Mapping[str, Any]]],
+        messages: Sequence[Message | Mapping[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         normalized_messages = _normalize_responses_messages(messages)
@@ -64,7 +64,7 @@ class OpenAIResponsesProvider(BaseProvider):
 
     def _messages_to_input(
         self, messages: list[dict[str, Any]]
-    ) -> Union[str, list[dict[str, Any]]]:
+    ) -> str | list[dict[str, Any]]:
         if (
             len(messages) == 1
             and messages[0].get("role") == "user"
@@ -309,8 +309,8 @@ class OpenAIResponsesProvider(BaseProvider):
 
     @staticmethod
     def _normalize_tool_choice(
-        tool_choice: Union[str, dict[str, Any]],
-    ) -> Union[str, dict[str, Any]]:
+        tool_choice: str | dict[str, Any],
+    ) -> str | dict[str, Any]:
         if isinstance(tool_choice, dict):
             if tool_choice.get("type") == "function":
                 if "name" in tool_choice and isinstance(tool_choice["name"], str):
@@ -325,8 +325,8 @@ class OpenAIResponsesProvider(BaseProvider):
         model: str,
         messages: list[dict[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         previous_response_id = kwargs.pop("previous_response_id", None)

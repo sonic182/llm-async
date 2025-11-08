@@ -1,4 +1,5 @@
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 from llm_async.models import Message, Response, Tool
 from llm_async.models.tool_call import ToolCall
@@ -13,7 +14,7 @@ class OpenAIProvider(BaseProvider):
         self,
         api_key: str,
         base_url: str = "https://api.openai.com/v1",
-        retry_config: Optional[RetryConfig] = None,
+        retry_config: RetryConfig | None = None,
     ):
         super().__init__(api_key, base_url, retry_config)
 
@@ -90,8 +91,8 @@ class OpenAIProvider(BaseProvider):
         model: str,
         messages: list[dict[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {

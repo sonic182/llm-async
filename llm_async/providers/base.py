@@ -1,5 +1,5 @@
-from collections.abc import Mapping, Sequence
-from typing import Any, Callable, Literal, Optional, Union
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, Literal
 
 import aiosonic  # type: ignore[import-untyped]
 
@@ -12,7 +12,7 @@ from llm_async.utils.retry import RetryConfig  # type: ignore
 
 class BaseProvider:
     def __init__(
-        self, api_key: str, base_url: str = "", retry_config: Optional[RetryConfig] = None
+        self, api_key: str, base_url: str = "", retry_config: RetryConfig | None = None
     ):
         self.api_key = api_key
         self.base_url = base_url
@@ -26,10 +26,10 @@ class BaseProvider:
     async def acomplete(
         self,
         model: str,
-        messages: Sequence[Union[Message, Mapping[str, Any]]],
+        messages: Sequence[Message | Mapping[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         normalized_messages = normalize_messages(messages)
@@ -44,8 +44,8 @@ class BaseProvider:
         model: str,
         messages: list[dict[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         raise NotImplementedError
@@ -71,7 +71,7 @@ class BaseProvider:
         self,
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"],
         path: str,
-        json_data: Optional[dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Make a request to the provider's API.

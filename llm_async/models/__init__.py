@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Union
+from typing import Any
 
 from llm_async.models.event import Event
 from llm_async.models.message import Message
@@ -13,5 +13,5 @@ __all__ = ["Tool", "Response", "StreamChunk", "Event", "Message", "ToolCall"]
 class Tool:
     name: str
     description: str
-    parameters: Union[dict[str, Any], None] = None
-    input_schema: Union[dict[str, Any], None] = None
+    parameters: dict[str, Any] | None = None
+    input_schema: dict[str, Any] | None = None

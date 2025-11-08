@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any
 
 from llm_async.models import Response, Tool
 from llm_async.utils.http import post_json
@@ -12,7 +12,7 @@ class OpenRouterProvider(OpenAIProvider):
         self,
         api_key: str,
         base_url: str = "https://openrouter.ai/api/v1",
-        retry_config: Optional[RetryConfig] = None,
+        retry_config: RetryConfig | None = None,
     ):
         super().__init__(api_key, base_url, retry_config)
 
@@ -21,8 +21,8 @@ class OpenRouterProvider(OpenAIProvider):
         model: str,
         messages: list[dict[str, Any]],
         stream: bool = False,
-        tools: Union[list[Tool], None] = None,
-        tool_choice: Union[str, dict[str, Any], None] = None,
+        tools: list[Tool] | None = None,
+        tool_choice: str | dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {
