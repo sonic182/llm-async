@@ -4,11 +4,29 @@ version = "0.2.0"
 description = "Multi-LLM Provider Library"
 readme = "README.md"
 license = "MIT"
-repository = "https://github.com/sonic182/aiosonic"
+repository = "https://github.com/sonic182/llm-async"
+homepage = "https://github.com/sonic182/llm-async"
+documentation = "https://github.com/sonic182/llm-async#readme"
+keywords = ["llm", "asyncio", "ai", "openai", "anthropic", "claude", "gemini", "google", "openrouter", "streaming", "tool calling", "json schema", "structured outputs", "python", "aiosonic"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
 authors = [
     "Johanderson Mogollon <johander1822@gmail.com>",
 ]
 packages = [{include = "llm_async"}]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/sonic182/llm-async/issues"
+"Source" = "https://github.com/sonic182/llm-async"
+"Changelog" = "https://github.com/sonic182/llm-async/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
 python = "^3.9"

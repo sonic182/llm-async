@@ -1,6 +1,13 @@
-# llm_async
+# llm_async — Async multi‑provider LLM client for Python
 
-An async-first Python library for interacting with Large Language Model (LLM) providers.
+High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and OpenRouter. Built on top of aiosonic for fast, low-latency HTTP and true asyncio streaming across providers.
+
+[![PyPI - Version](https://img.shields.io/pypi/v/llm_async.svg)](https://pypi.org/project/llm_async/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/llm_async.svg)](https://pypi.org/project/llm_async/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#)
+[![Coverage](https://img.shields.io/badge/coverage-%E2%80%94-blue.svg)](#)
+[![Code Style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 ## Table of Contents
 
@@ -9,6 +16,7 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
 - [Installation](#installation)
   - [Using Poetry (Recommended)](#using-poetry-recommended)
   - [Using pip](#using-pip)
+- [Quickstart](#quickstart)
 - [Usage](#usage)
   - [Basic Chat Completion](#basic-chat-completion)
     - [OpenAI](#openai)
@@ -41,12 +49,21 @@ An async-first Python library for interacting with Large Language Model (LLM) pr
 | Streaming | ✅ | ✅ | ✅ | ✅ |
 | Structured Outputs | ✅ | ❌ | ✅ | ✅ |
 
+Notes:
+- Structured Outputs: Supported by OpenAI, Google Gemini, and OpenRouter; not supported by Claude.
+- See [Examples](#examples) for tool-call round-trips and streaming demos.
+
 - **Async-first**: Built with asyncio for high-performance, non-blocking operations.
 - **Provider Support**: Supports OpenAI, Anthropic Claude, Google Gemini, and OpenRouter for chat completions.
 - **Tool Calling**: Tool execution with unified tool definitions across providers.
 - **Structured Outputs**: Enforce JSON schema validation on responses (OpenAI, Google, OpenRouter).
 - **Extensible**: Easy to add new providers by inheriting from `BaseProvider`.
 - **Tested**: Comprehensive test suite with high coverage.
+
+#### Performance
+- Built on top of [aiosonic](https://github.com/sonic182/aiosonic) for fast, low-overhead async HTTP requests and streaming.
+- True asyncio end-to-end: concurrent requests across providers with minimal overhead.
+- Designed for fast tool-call round-trips and low-latency streaming.
 
 ## Installation
 
@@ -60,6 +77,27 @@ poetry add llm_async
 
 ```bash
 pip install git+https://github.com/sonic182/llm_async.git
+```
+
+## Quickstart
+
+Minimal async example with streaming using OpenAI-compatible interface:
+
+```python
+import asyncio
+from llm_async import OpenAIProvider
+
+async def main():
+    provider = OpenAIProvider(api_key="YOUR_OPENAI_API_KEY")
+    # Stream tokens as they arrive
+    async for chunk in await provider.acomplete(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "Give me 3 ideas for a CLI tool."}],
+        stream=True,
+    ):
+        print(chunk.delta, end="", flush=True)
+
+asyncio.run(main())
 ```
 
 ## Usage
@@ -233,6 +271,11 @@ async def main():
 asyncio.run(main())
 ```
 
+## Recipes
+- Streaming across providers: see `examples/stream_all_providers.py`
+- Tool-call round-trip (calculator): see `examples/tool_call_all_providers.py`
+- Structured outputs (JSON schema): see section below and examples
+
 ### Examples
 
 The `examples` directory contains runnable scripts for local testing against all supported providers:
@@ -288,6 +331,13 @@ asyncio.run(main())
 ```
 
 **Supported Providers**: OpenAI, Google Gemini, OpenRouter. Claude does not support structured outputs.
+
+## Why llm_async?
+- Async-first performance (aiosonic-based) vs. sync or heavier HTTP stacks.
+- Unified provider interface: same message/tool/streaming patterns across OpenAI, Claude, Gemini, OpenRouter.
+- Structured outputs (OpenAI, Google, OpenRouter) with JSON schema validation.
+- Tool-call round-trip helpers for consistent multi-turn execution.
+- Minimal surface area: easy to extend with new providers via BaseProvider.
 
 ## API Reference
 
