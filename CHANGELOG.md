@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.3.0] - 2025-11-08
 ### Added
 - Introduced unified `Message` model with normalization helpers and provider-agnostic serialization
 - Expanded sample scripts to demonstrate multi-provider tool calling (`examples/tool_call_all_providers.py`) and streaming (`examples/stream_all_providers.py`) with shared prompts and dotenv-loaded credentials
@@ -47,7 +49,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/sonic182/llm-async/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/sonic182/llm-async/compare/0.1.1...0.2.0
 [0.1.1]: https://github.com/sonic182/llm-async/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/sonic182/llm-async/releases/tag/0.1.0
