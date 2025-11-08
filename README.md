@@ -221,7 +221,7 @@ async def main():
     tool_result = await provider.execute_tool(tool_call, tools_map)
     
     # Second turn: Send the tool result back to the LLM
-    messages_with_tool = messages + [response.main_response.original_data] + [tool_result]
+    messages_with_tool = messages + [response.main_response.original] + [tool_result]
     
     final_response = await provider.acomplete(
         model="gpt-4o-mini",
@@ -233,6 +233,14 @@ async def main():
 asyncio.run(main())
 ```
 
+### Examples
+
+The `examples` directory contains runnable scripts for local testing against all supported providers:
+
+- `examples/tool_call_all_providers.py` shows how to execute the same calculator tool call round-trip with OpenAI, OpenRouter, Claude, and Google using shared message/tool definitions.
+- `examples/stream_all_providers.py` streams completions from the same provider list so you can compare chunking formats and latency.
+
+Both scripts expect a `.env` file with `OPENAI_API_KEY`, `OPENROUTER_API_KEY`, `CLAUDE_API_KEY`, and `GEMINI_API_KEY` (plus optional per-provider model overrides). Run them via Poetry, e.g. `poetry run python examples/tool_call_all_providers.py`.
 
 ### Structured Outputs
 

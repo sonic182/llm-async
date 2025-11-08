@@ -1,10 +1,10 @@
 from typing import Any, Callable, Optional, Union
 
+from llm_async.models import Message, Response, Tool
+from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
 from llm_async.utils.retry import RetryConfig  # type: ignore
 
-from ..models import Response, Tool
-from ..models.response import MainResponse, ToolCall
 from .base import BaseProvider
 
 
@@ -30,18 +30,25 @@ class OpenAIProvider(BaseProvider):
             for tool in tools
         ]
 
-    def _parse_response(self, original: dict[str, Any]) -> MainResponse:
+    def _parse_response(self, original: dict[str, Any]) -> Message:
         choice = original["choices"][0]
-        message = choice["message"]
-        tool_calls_data = message.get("tool_calls")
+        message_payload = choice["message"]
+        tool_calls_data = message_payload.get("tool_calls")
         tool_calls = None
         if tool_calls_data:
             tool_calls = [
-                ToolCall(id=tc["id"], type=tc["type"], function=tc.get("function"))
+                ToolCall(id=tc.get("id", ""), type=tc.get("type", ""), function=tc.get("function"))
                 for tc in tool_calls_data
             ]
-        return MainResponse(
-            content=message.get("content"), tool_calls=tool_calls, original_data=message
+        content_value = message_payload.get("content")
+        if content_value is None:
+            content_value = ""
+        role = message_payload.get("role", "assistant")
+        return Message(
+            role=role,
+            content=content_value,
+            tool_calls=tool_calls,
+            original=message_payload,
         )
 
     async def execute_tool(

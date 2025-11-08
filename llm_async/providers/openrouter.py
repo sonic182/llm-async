@@ -1,9 +1,9 @@
 from typing import Any, Optional, Union
 
+from llm_async.models import Response, Tool
 from llm_async.utils.http import post_json
 from llm_async.utils.retry import RetryConfig  # type: ignore
 
-from ..models import Response, Tool
 from .openai import OpenAIProvider
 
 

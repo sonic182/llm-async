@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from llm_async.models.response import ToolCall
+from llm_async.models.tool_call import ToolCall
 from llm_async.providers.claude import ClaudeProvider
 from llm_async.providers.google import GoogleProvider
 from llm_async.providers.openai import OpenAIProvider

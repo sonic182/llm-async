@@ -1,11 +1,13 @@
+from collections.abc import Mapping, Sequence
 from typing import Any, Callable, Optional, Union
 
 import aiosonic  # type: ignore[import-untyped]
 
-from ..models import Response, Tool
-from ..models.response import MainResponse, ToolCall
-from ..utils.http import parse_stream_chunk, post_json, stream_json
-from ..utils.retry import RetryConfig  # type: ignore
+from llm_async.models import Message, Response, Tool
+from llm_async.models.message import message_to_dict, normalize_messages, validate_messages
+from llm_async.models.tool_call import ToolCall
+from llm_async.utils.http import parse_stream_chunk, post_json, stream_json
+from llm_async.utils.retry import RetryConfig  # type: ignore
 
 
 class BaseProvider:
@@ -24,13 +26,18 @@ class BaseProvider:
     async def acomplete(
         self,
         model: str,
-        messages: list[dict[str, Any]],
+        messages: Sequence[Union[Message, Mapping[str, Any]]],
         stream: bool = False,
         tools: Union[list[Tool], None] = None,
         tool_choice: Union[str, dict[str, Any], None] = None,
         **kwargs: Any,
     ) -> Response:
-        return await self._single_complete(model, messages, stream, tools, tool_choice, **kwargs)
+        normalized_messages = normalize_messages(messages)
+        validate_messages(normalized_messages)
+        serialized_messages = self._serialize_messages(normalized_messages)
+        return await self._single_complete(
+            model, serialized_messages, stream, tools, tool_choice, **kwargs
+        )
 
     async def _single_complete(
         self,
@@ -43,17 +50,20 @@ class BaseProvider:
     ) -> Response:
         raise NotImplementedError
 
+    def _serialize_messages(self, messages: Sequence[Message]) -> list[dict[str, Any]]:
+        return [message_to_dict(message) for message in messages]
+
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         """Format tools for the current provider."""
         raise NotImplementedError
 
-    def _parse_response(self, original: dict[str, Any]) -> MainResponse:
+    def _parse_response(self, original: dict[str, Any]) -> Message:
         """Parse provider response into standard format."""
         raise NotImplementedError
 
     async def execute_tool(
         self, tool_call: ToolCall, tools_map: dict[str, Callable[..., Any]]
-    ) -> list[dict[str, Any]]:
+    ) -> dict[str, Any]:
         """Execute tools and return results in provider-specific format."""
         raise NotImplementedError
 

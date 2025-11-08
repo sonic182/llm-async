@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llm_async.models import Response
+from llm_async.models import Message, Response
 from llm_async.providers.google import GoogleProvider
 
 
@@ -11,6 +11,13 @@ async def test_google_init() -> None:
     provider = GoogleProvider(api_key="test_key")
     assert provider.api_key == "test_key"
     assert provider.base_url == "https://generativelanguage.googleapis.com/v1beta/models/"
+
+
+def test_google_serializes_message_instances() -> None:
+    provider = GoogleProvider(api_key="test_key")
+    message = Message(role="user", content="Hello")
+    serialized = provider._serialize_messages([message])
+    assert serialized == [{"role": "user", "content": "Hello"}]
 
 
 @pytest.mark.asyncio
