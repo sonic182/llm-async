@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llm_async.models import Response, Tool
+from llm_async.models import Message, Response, Tool
 from llm_async.providers.claude import ClaudeProvider
 
 
@@ -11,6 +11,13 @@ async def test_claude_init() -> None:
     provider = ClaudeProvider(api_key="test_key")
     assert provider.api_key == "test_key"
     assert provider.base_url == "https://api.anthropic.com/v1"
+
+
+def test_claude_serializes_message_instances() -> None:
+    provider = ClaudeProvider(api_key="test_key")
+    message = Message(role="assistant", content="Hello")
+    serialized = provider._serialize_messages([message])
+    assert serialized == [{"role": "assistant", "content": "Hello"}]
 
 
 @pytest.mark.asyncio

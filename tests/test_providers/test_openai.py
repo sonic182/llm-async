@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from llm_async.models import Response, Tool
+from llm_async.models import Message, Response, Tool
 from llm_async.providers.openai import OpenAIProvider
 
 
@@ -11,6 +11,13 @@ async def test_openai_init() -> None:
     provider = OpenAIProvider(api_key="test_key")
     assert provider.api_key == "test_key"
     assert provider.base_url == "https://api.openai.com/v1"
+
+
+def test_openai_serializes_message_instances() -> None:
+    provider = OpenAIProvider(api_key="test_key")
+    message = Message(role="user", content="Hi")
+    serialized = provider._serialize_messages([message])
+    assert serialized == [{"role": "user", "content": "Hi"}]
 
 
 @pytest.mark.asyncio
