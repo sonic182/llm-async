@@ -76,7 +76,7 @@ poetry add llm_async
 ### Using pip
 
 ```bash
-pip install git+https://github.com/sonic182/llm_async.git
+pip install llm-async
 ```
 
 ## Quickstart
@@ -392,7 +392,7 @@ asyncio.run(main())
 ### Setup
 
 ```bash
-git clone https://github.com/sonic182/llm_async.git
+git clone https://github.com/sonic182/llm-async.git
 cd llm_async
 poetry install
 ```
