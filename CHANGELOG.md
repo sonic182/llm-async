@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+
+## [0.3.1] - 2025-11-08
 ### Added
 - **OpenAIResponsesProvider**: New provider for OpenAI's Responses API with advanced features:
   - Stateless multi-turn conversations using `previous_response_id` to reference prior responses without resending full message history
@@ -64,7 +66,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.3.1...HEAD
+[0.3.1]: https://github.com/sonic182/llm-async/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/sonic182/llm-async/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/sonic182/llm-async/compare/0.1.1...0.2.0
 [0.1.1]: https://github.com/sonic182/llm-async/compare/0.1.0...0.1.1
