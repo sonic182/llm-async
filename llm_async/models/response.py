@@ -1,31 +1,19 @@
+from __future__ import annotations
+
 from collections.abc import AsyncIterator
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Any
 
-
-@dataclass
-class ToolCall:
-    id: str
-    type: str
-    name: Optional[str] = None
-    input: Optional[dict[str, Any]] = None
-    function: Optional[dict[str, Any]] = None
-
-
-@dataclass
-class MainResponse:
-    content: str
-    tool_calls: list[ToolCall] = field(default_factory=list)
-    original_data: dict[str, Any] = field(default_factory=dict)
+from llm_async.models.message import Message
 
 
 @dataclass
 class Response:
     original: dict[str, Any]
     provider_name: str
-    main_response: Optional[MainResponse] = None
+    main_response: Message | None = None
     stream: bool = False
-    stream_generator: Optional[AsyncIterator["StreamChunk"]] = None
+    stream_generator: AsyncIterator[StreamChunk] | None = None
 
     async def stream_content(self) -> AsyncIterator[str]:
         """Convenience method to iterate over stream content"""
@@ -43,5 +31,5 @@ class StreamChunk:
     - `original`: the original parsed JSON chunk from the provider
     """
 
-    content: Optional[str]
+    content: str | None
     original: dict[str, Any]

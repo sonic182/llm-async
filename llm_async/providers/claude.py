@@ -1,10 +1,10 @@
 from typing import Any, Callable, Optional, Union
 
+from llm_async.models import Message, Response, Tool
+from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
 from llm_async.utils.retry import RetryConfig  # type: ignore
 
-from ..models import Response, Tool
-from ..models.response import MainResponse, ToolCall
 from .base import BaseProvider
 
 DEFAULT_MAX_TOKENS = 8192
@@ -25,7 +25,7 @@ class ClaudeProvider(BaseProvider):
             for tool in tools
         ]
 
-    def _parse_response(self, original: dict[str, Any]) -> MainResponse:
+    def _parse_response(self, original: dict[str, Any]) -> Message:
         content_blocks = original.get("content", [])
         text_content = ""
         tool_calls: list[ToolCall] = []
@@ -47,10 +47,11 @@ class ClaudeProvider(BaseProvider):
             "role": original.get("role", "assistant"),
             "content": content_blocks,
         }
-        return MainResponse(
-            content=text_content or None,
+        return Message(
+            role=message["role"],
+            content=text_content or "",
             tool_calls=tool_calls or None,
-            original_data=message,
+            original=message,
         )
 
     async def execute_tool(

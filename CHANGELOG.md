@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Added
+- Introduced unified `Message` model with normalization helpers and provider-agnostic serialization
+- Expanded sample scripts to demonstrate multi-provider tool calling (`examples/tool_call_all_providers.py`) and streaming (`examples/stream_all_providers.py`) with shared prompts and dotenv-loaded credentials
+### Removed
+- Deprecated `MainResponse` helper in favor of the new `Message` abstraction
 
 ## [0.2.0] - 2025-11-07
 ### Changed

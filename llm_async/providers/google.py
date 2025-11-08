@@ -1,10 +1,10 @@
 from typing import Any, Callable, Optional, Union
 
+from llm_async.models import Message, Response, Tool
+from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
 from llm_async.utils.retry import RetryConfig  # type: ignore
 
-from ..models import Response, Tool
-from ..models.response import MainResponse, ToolCall
 from .base import BaseProvider
 
 
@@ -51,15 +51,19 @@ class GoogleProvider(BaseProvider):
             formatted_tools.append(formatted_tool)
         return [{"functionDeclarations": formatted_tools}]
 
-    def _parse_response(self, original: dict[str, Any]) -> MainResponse:
+    def _parse_response(self, original: dict[str, Any]) -> Message:
         candidates = original.get("candidates", [])
         if not candidates:
-            return MainResponse(
-                content=None, tool_calls=None, original_data={"role": "model", "parts": []}
+            return Message(
+                role="assistant",
+                content="",
+                tool_calls=None,
+                original={"role": "model", "parts": []},
             )
         candidate = candidates[0]
         content_data = candidate.get("content", {})
         parts = content_data.get("parts", [])
+
         text_content = ""
         tool_calls: list[ToolCall] = []
         for part in parts:
@@ -77,14 +81,18 @@ class GoogleProvider(BaseProvider):
                         },
                     )
                 )
+        role = candidate.get("role", "assistant") or "assistant"
+        if role == "model":
+            role = "assistant"
         message = {
-            "role": candidate.get("role", "model"),
+            "role": role,
             "parts": parts,
         }
-        return MainResponse(
-            content=text_content or None,
+        return Message(
+            role=role,
+            content=text_content or "",
             tool_calls=tool_calls or None,
-            original_data=message,
+            original=message,
         )
 
     async def execute_tool(
