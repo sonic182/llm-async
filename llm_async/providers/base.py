@@ -4,8 +4,8 @@ from typing import Any, Literal
 import aiosonic  # type: ignore[import-untyped]
 
 from llm_async.models import Message, Response, Tool
-from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.message import message_to_dict, normalize_messages, validate_messages
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import parse_stream_chunk, post_json, stream_json
 from llm_async.utils.retry import RetryConfig  # type: ignore

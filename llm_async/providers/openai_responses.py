@@ -6,7 +6,6 @@ from llm_async.models.response import StreamChunk
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json, stream_json
-from llm_async.utils.retry import RetryConfig  # type: ignore
 
 from .base import BaseProvider
 

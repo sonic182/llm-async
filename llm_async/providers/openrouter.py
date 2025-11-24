@@ -1,4 +1,5 @@
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from llm_async.models import Response, Tool
 from llm_async.models.response_schema import ResponseSchema
