@@ -1,7 +1,8 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from llm_async.models import Message, Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
 from llm_async.utils.retry import RetryConfig  # type: ignore
@@ -17,7 +18,7 @@ class GoogleProvider(BaseProvider):
         vertex_config: dict[str, Any] | None = None,
         retry_config: RetryConfig | None = None,
         client_kwargs: dict | None = None,
-        http2: bool = False
+        http2: bool = False,
     ):
         """Google Provider supporting both Google AI API and Vertex AI.
 
@@ -147,10 +148,11 @@ class GoogleProvider(BaseProvider):
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         """Send completion request to Google's Gemini API."""
-        payload = self._build_request_payload(messages, tools, **kwargs)
+        payload = self._build_request_payload(messages, tools, response_schema, **kwargs)
         headers = self._build_headers()
 
         # For Google AI API, the base URL already includes the model path
@@ -174,18 +176,20 @@ class GoogleProvider(BaseProvider):
         self,
         messages: list[dict[str, Any]],
         tools: list[Tool] | None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Build the request payload for Google's Gemini API."""
         contents = self._format_messages(messages)
 
-        # Handle structured outputs
-        response_schema = kwargs.pop("response_schema", None)
-
         payload = {
             "contents": contents,
             **kwargs,
         }
+
+        schema_obj = ResponseSchema.coerce(response_schema)
+        if schema_obj:
+            payload["generationConfig"] = schema_obj.for_google()
 
         # Handle system message
         if messages and messages[0]["role"] == "system":
@@ -197,12 +201,6 @@ class GoogleProvider(BaseProvider):
         # Handle tools/function calling
         if tools:
             payload["tools"] = self._format_tools(tools)
-
-        if response_schema:
-            payload["generationConfig"] = {
-                "responseMimeType": "application/json",
-                "responseSchema": self._remove_additional_properties(response_schema),
-            }
 
         return payload
 
@@ -309,19 +307,3 @@ class GoogleProvider(BaseProvider):
             endpoint = f"{location_id}-aiplatform.googleapis.com"
 
         return f"https://{endpoint}/v1/projects/{project_id}/locations/{location_id}/publishers/google/models"
-
-    def _remove_additional_properties(self, schema: Any) -> Any:
-        """Recursively remove 'additionalProperties' from schema (Google API doesn't support it)."""
-        if isinstance(schema, dict):
-            # Remove additionalProperties and process nested values
-            cleaned = {}
-            for key, value in schema.items():
-                if key not in ["additionalProperties", "additional_properties"]:
-                    cleaned[key] = self._remove_additional_properties(value)
-            return cleaned
-        elif isinstance(schema, list):
-            # Process list elements
-            return [self._remove_additional_properties(item) for item in schema]
-        else:
-            # Return other types unchanged
-            return schema

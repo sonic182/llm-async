@@ -1,7 +1,8 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from llm_async.models import Message, Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
 
@@ -86,6 +87,7 @@ class OpenAIProvider(BaseProvider):
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {
@@ -95,13 +97,9 @@ class OpenAIProvider(BaseProvider):
             **kwargs,
         }
 
-        # Handle structured outputs
-        if "response_schema" in payload:
-            schema = payload.pop("response_schema")
-            payload["response_format"] = {
-                "type": "json_schema",
-                "json_schema": {"name": "response", "schema": schema, "strict": True},
-            }
+        schema_obj = ResponseSchema.coerce(response_schema)
+        if schema_obj:
+            payload["response_format"] = schema_obj.for_openai()
 
         if tools:
             payload["tools"] = self._format_tools(tools)

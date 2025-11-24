@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, Mapping
 
 from llm_async.models import Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.utils.http import post_json
 
 from .openai import OpenAIProvider
@@ -16,6 +17,7 @@ class OpenRouterProvider(OpenAIProvider):
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {
@@ -25,13 +27,9 @@ class OpenRouterProvider(OpenAIProvider):
             **kwargs,
         }
 
-        # Handle structured outputs
-        if "response_schema" in payload:
-            schema = payload.pop("response_schema")
-            payload["response_format"] = {
-                "type": "json_schema",
-                "json_schema": {"name": "response", "schema": schema, "strict": True},
-            }
+        schema_obj = ResponseSchema.coerce(response_schema)
+        if schema_obj:
+            payload["response_format"] = schema_obj.for_openai()
 
         if tools:
             payload["tools"] = self._format_tools(tools)

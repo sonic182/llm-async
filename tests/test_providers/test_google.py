@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from llm_async.models import Message, Response
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.google import GoogleProvider
 
 
@@ -56,11 +57,13 @@ async def test_google_acomplete_with_response_schema() -> None:
         mock_client.post.return_value = mock_response
 
         provider = GoogleProvider(api_key="test_key")
-        schema = {
-            "type": "object",
-            "properties": {"location": {"type": "string"}},
-            "required": ["location"],
-        }
+        schema = ResponseSchema(
+            schema={
+                "type": "object",
+                "properties": {"location": {"type": "string"}},
+                "required": ["location"],
+            }
+        )
         await provider.acomplete(
             model="gemini-2.5-flash",
             messages=[{"role": "user", "content": "Where?"}],
@@ -68,7 +71,4 @@ async def test_google_acomplete_with_response_schema() -> None:
         )
         call_args = mock_client.post.call_args
         payload = call_args[1]["json"]
-        assert payload["generationConfig"] == {
-            "responseMimeType": "application/json",
-            "responseSchema": schema,
-        }
+        assert payload["generationConfig"] == schema.for_google()

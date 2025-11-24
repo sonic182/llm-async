@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from llm_async.models import Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.openrouter import OpenRouterProvider
 
 
@@ -303,11 +304,13 @@ async def test_openrouter_acomplete_with_response_schema() -> None:
         mock_client.post.return_value = mock_response
 
         provider = OpenRouterProvider(api_key="test_key")
-        schema = {
-            "type": "object",
-            "properties": {"location": {"type": "string"}},
-            "required": ["location"],
-        }
+        schema = ResponseSchema(
+            schema={
+                "type": "object",
+                "properties": {"location": {"type": "string"}},
+                "required": ["location"],
+            }
+        )
         await provider.acomplete(
             model="openrouter/model",
             messages=[{"role": "user", "content": "Where?"}],
@@ -315,7 +318,4 @@ async def test_openrouter_acomplete_with_response_schema() -> None:
         )
         call_args = mock_client.post.call_args
         payload = call_args[1]["json"]
-        assert payload["response_format"] == {
-            "type": "json_schema",
-            "json_schema": {"name": "response", "schema": schema, "strict": True},
-        }
+        assert payload["response_format"] == schema.for_openai()

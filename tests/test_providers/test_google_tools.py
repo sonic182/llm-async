@@ -1,6 +1,7 @@
 import pytest
 
 from llm_async.models import Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.google import GoogleProvider
 
 
@@ -99,17 +100,19 @@ def test_build_vertex_url_variants() -> None:
         prov._build_vertex_url({})
 
 
-def test_remove_additional_properties_recursively() -> None:
-    prov = GoogleProvider(api_key="k")
-    schema = {
-        "type": "object",
-        "additionalProperties": True,
-        "properties": {
-            "x": {"type": "string", "additionalProperties": False},
-            "y": [{"additionalProperties": True}],
-        },
-    }
+def test_response_schema_google_helper() -> None:
+    schema = ResponseSchema(
+        schema={
+            "type": "object",
+            "additionalProperties": True,
+            "properties": {
+                "x": {"type": "string", "additionalProperties": False},
+                "y": [{"additionalProperties": True}],
+            },
+        }
+    )
 
-    cleaned = prov._remove_additional_properties(schema)
+    config = schema.for_google()
+    cleaned = config["responseSchema"]
     assert "additionalProperties" not in cleaned
     assert "additionalProperties" not in cleaned["properties"]["x"]

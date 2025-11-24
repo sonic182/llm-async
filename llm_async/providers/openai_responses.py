@@ -3,6 +3,7 @@ from typing import Any
 
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response import StreamChunk
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json, stream_json
 from llm_async.utils.retry import RetryConfig  # type: ignore
@@ -49,16 +50,21 @@ class OpenAIResponsesProvider(BaseProvider):
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         normalized_messages = _normalize_responses_messages(messages)
         return await self._single_complete(
-            model, normalized_messages, stream, tools, tool_choice, **kwargs
+            model,
+            normalized_messages,
+            stream,
+            tools,
+            tool_choice,
+            response_schema=response_schema,
+            **kwargs,
         )
 
-    def _messages_to_input(
-        self, messages: list[dict[str, Any]]
-    ) -> str | list[dict[str, Any]]:
+    def _messages_to_input(self, messages: list[dict[str, Any]]) -> str | list[dict[str, Any]]:
         if (
             len(messages) == 1
             and messages[0].get("role") == "user"
@@ -321,6 +327,7 @@ class OpenAIResponsesProvider(BaseProvider):
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         previous_response_id = kwargs.pop("previous_response_id", None)
@@ -336,16 +343,9 @@ class OpenAIResponsesProvider(BaseProvider):
 
         payload["input"] = self._messages_to_input(messages)
 
-        if "response_schema" in payload:
-            schema = payload.pop("response_schema")
-            payload["text"] = {
-                "format": {
-                    "type": "json_schema",
-                    "name": "response",
-                    "schema": schema,
-                    "strict": True,
-                }
-            }
+        schema_obj = ResponseSchema.coerce(response_schema)
+        if schema_obj:
+            payload["text"] = {"format": schema_obj.for_openai_responses()}
 
         if tools:
             payload["tools"] = self._format_tools(tools)

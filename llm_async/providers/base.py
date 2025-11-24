@@ -4,6 +4,7 @@ from typing import Any, Literal
 import aiosonic  # type: ignore[import-untyped]
 
 from llm_async.models import Message, Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.message import message_to_dict, normalize_messages, validate_messages
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import parse_stream_chunk, post_json, stream_json
@@ -19,7 +20,7 @@ class BaseProvider:
         base_url: str = "",
         retry_config: RetryConfig | None = None,
         client_kwargs: dict | None = None,
-        http2: bool = False
+        http2: bool = False,
     ):
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
@@ -38,13 +39,20 @@ class BaseProvider:
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         normalized_messages = normalize_messages(messages)
         validate_messages(normalized_messages)
         serialized_messages = self._serialize_messages(normalized_messages)
         return await self._single_complete(
-            model, serialized_messages, stream, tools, tool_choice, **kwargs
+            model,
+            serialized_messages,
+            stream,
+            tools,
+            tool_choice,
+            response_schema=response_schema,
+            **kwargs,
         )
 
     async def _single_complete(
@@ -54,6 +62,7 @@ class BaseProvider:
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         raise NotImplementedError

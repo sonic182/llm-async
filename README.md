@@ -327,18 +327,21 @@ Enforce JSON schema validation on model responses for consistent, type-safe outp
 import asyncio
 import json
 from llm_async import OpenAIProvider
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.google import GoogleProvider
 
 # Define response schema
-response_schema = {
-    "type": "object",
-    "properties": {
-        "answer": {"type": "string"},
-        "confidence": {"type": "number"}
-    },
-    "required": ["answer", "confidence"],
-    "additionalProperties": False
-}
+response_schema = ResponseSchema(
+    schema={
+        "type": "object",
+        "properties": {
+            "answer": {"type": "string"},
+            "confidence": {"type": "number"}
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": False,
+    }
+)
 
 async def main():
     # OpenAI example

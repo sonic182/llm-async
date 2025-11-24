@@ -6,6 +6,7 @@ from typing import Any
 from dotenv import load_dotenv
 
 from llm_async.models.message import Message
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers import OpenAIResponsesProvider
 
 # Requires llm-async and python-dotenv installed in your environment.
@@ -36,15 +37,17 @@ async def streaming_with_structured_outputs() -> None:
     provider = OpenAIResponsesProvider(api_key=require("OPENAI_API_KEY", OPENAI_API_KEY))
 
     # JSON schema for a short story with title and body
-    response_schema = {
-        "type": "object",
-        "properties": {
-            "title": {"type": "string"},
-            "body": {"type": "string"},
-        },
-        "required": ["title", "body"],
-        "additionalProperties": False,
-    }
+    response_schema = ResponseSchema(
+        schema={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string"},
+                "body": {"type": "string"},
+            },
+            "required": ["title", "body"],
+            "additionalProperties": False,
+        }
+    )
 
     # Ask for a structured story; stream text deltas as they arrive
     response = await provider.acomplete(

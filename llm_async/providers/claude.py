@@ -1,7 +1,8 @@
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from llm_async.models import Message, Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
 
@@ -98,6 +99,7 @@ class ClaudeProvider(BaseProvider):
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
+        response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {
@@ -107,7 +109,7 @@ class ClaudeProvider(BaseProvider):
         }
 
         # Handle structured outputs
-        if "response_schema" in kwargs:
+        if response_schema is not None:
             raise NotImplementedError(
                 "Claude provider does not support structured outputs with response_schema"
             )

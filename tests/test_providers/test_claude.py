@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from llm_async.models import Message, Response, Tool
+from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.claude import ClaudeProvider
 
 
@@ -161,7 +162,7 @@ async def test_claude_acomplete_with_tools() -> None:
 @pytest.mark.asyncio
 async def test_claude_response_schema_not_supported() -> None:
     provider = ClaudeProvider(api_key="test_key")
-    schema = {"type": "object", "properties": {"test": {"type": "string"}}}
+    schema = ResponseSchema(schema={"type": "object", "properties": {"test": {"type": "string"}}})
     with pytest.raises(NotImplementedError, match="does not support structured outputs"):
         await provider.acomplete(
             model="claude-sonnet-4-5",
