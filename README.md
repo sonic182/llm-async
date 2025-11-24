@@ -326,46 +326,25 @@ Enforce JSON schema validation on model responses for consistent, type-safe outp
 ```python
 import asyncio
 import json
+from dataclasses import dataclass
+
 from llm_async import OpenAIProvider
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.google import GoogleProvider
 
-# Define response schema
-response_schema = ResponseSchema(
-    schema={
-        "type": "object",
-        "properties": {
-            "answer": {"type": "string"},
-            "confidence": {"type": "number"}
-        },
-        "required": ["answer", "confidence"],
-        "additionalProperties": False,
-    }
-)
 
-async def main():
-    # OpenAI example
-    openai_provider = OpenAIProvider(api_key="your-openai-key")
-    response = await openai_provider.acomplete(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": "What is the capital of France?"}],
-        response_schema=response_schema
-    )
-    result = json.loads(response.main_response.content)
-    print(f"OpenAI: {result}")
+@dataclass
+class AnswerSchema:
+    answer: str
+    confidence: float
 
-    # Google Gemini example
-    google_provider = GoogleProvider(api_key="your-google-key")
-    response = await google_provider.acomplete(
-        model="gemini-2.5-flash",
-        messages=[{"role": "user", "content": "What is the capital of France?"}],
-        response_schema=response_schema
-    )
-    result = json.loads(response.main_response.content)
-    print(f"Gemini: {result}")
 
-asyncio.run(main())
+# Define response schema from dataclass metadata
+response_schema = ResponseSchema.from_dataclass(AnswerSchema)
 ```
+
+
+You can also pass a plain mapping when you prefer to hand-write JSON Schema.
 
 **Supported Providers**: OpenAI, Google Gemini, OpenRouter. Claude does not support structured outputs.
 

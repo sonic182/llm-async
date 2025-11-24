@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+from dataclasses import dataclass
 from typing import Any
 
 from dotenv import load_dotenv
@@ -26,18 +27,16 @@ GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 OPENAI_RESPONSES_MODEL = os.environ.get("OPENAI_RESPONSES_MODEL", "gpt-4.1-mini")
 
 PROMPT = "Return a JSON object with today's forecast, including a summary and probability of rain."
-SHARED_SCHEMA = ResponseSchema(
-    schema={
-        "type": "object",
-        "properties": {
-            "location": {"type": "string"},
-            "summary": {"type": "string"},
-            "rain_probability": {"type": "number"},
-        },
-        "required": ["location", "summary", "rain_probability"],
-        "additionalProperties": False,
-    }
-)
+
+
+@dataclass
+class ForecastSchema:
+    location: str
+    summary: str
+    rain_probability: float
+
+
+SHARED_SCHEMA = ResponseSchema.from_dataclass(ForecastSchema)
 
 
 def require(key: str, value: str | None) -> str:
