@@ -40,13 +40,7 @@ def _normalize_responses_messages(
 
 
 class OpenAIResponsesProvider(BaseProvider):
-    def __init__(
-        self,
-        api_key: str,
-        base_url: str = "https://api.openai.com/v1",
-        retry_config: RetryConfig | None = None,
-    ):
-        super().__init__(api_key, base_url, retry_config)
+    BASE_URL = "https://api.openai.com/v1"
 
     async def acomplete(
         self,

@@ -11,12 +11,20 @@ from llm_async.utils.retry import RetryConfig  # type: ignore
 
 
 class BaseProvider:
+    BASE_URL = None
+
     def __init__(
-        self, api_key: str, base_url: str = "", retry_config: RetryConfig | None = None
+        self,
+        api_key: str,
+        base_url: str = "",
+        retry_config: RetryConfig | None = None,
+        client_kwargs: dict | None = None,
+        http2: bool = False
     ):
         self.api_key = api_key
-        self.base_url = base_url
-        self.client = aiosonic.HTTPClient()
+        self.base_url = base_url or self.BASE_URL
+        self.client = aiosonic.HTTPClient(**(client_kwargs or {}))
+        self.http2 = http2
         self.retry_config = retry_config
 
     @classmethod

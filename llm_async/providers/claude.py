@@ -4,7 +4,6 @@ from typing import Any
 from llm_async.models import Message, Response, Tool
 from llm_async.models.tool_call import ToolCall
 from llm_async.utils.http import post_json
-from llm_async.utils.retry import RetryConfig  # type: ignore
 
 from .base import BaseProvider
 
@@ -12,13 +11,7 @@ DEFAULT_MAX_TOKENS = 8192
 
 
 class ClaudeProvider(BaseProvider):
-    def __init__(
-        self,
-        api_key: str,
-        base_url: str = "https://api.anthropic.com/v1",
-        retry_config: RetryConfig | None = None,
-    ):
-        super().__init__(api_key, base_url, retry_config)
+    BASE_URL = "https://api.anthropic.com/v1"
 
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         return [

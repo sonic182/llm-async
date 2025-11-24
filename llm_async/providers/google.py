@@ -16,6 +16,8 @@ class GoogleProvider(BaseProvider):
         base_url: str = "",
         vertex_config: dict[str, Any] | None = None,
         retry_config: RetryConfig | None = None,
+        client_kwargs: dict | None = None,
+        http2: bool = False
     ):
         """Google Provider supporting both Google AI API and Vertex AI.
 
@@ -39,7 +41,7 @@ class GoogleProvider(BaseProvider):
             if not base_url:
                 base_url = "https://generativelanguage.googleapis.com/v1beta/models/"
 
-        super().__init__(api_key, base_url, retry_config)
+        super().__init__(api_key, base_url, retry_config, client_kwargs, http2)
 
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         formatted_tools = []

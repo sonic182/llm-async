@@ -2,19 +2,12 @@ from typing import Any
 
 from llm_async.models import Response, Tool
 from llm_async.utils.http import post_json
-from llm_async.utils.retry import RetryConfig  # type: ignore
 
 from .openai import OpenAIProvider
 
 
 class OpenRouterProvider(OpenAIProvider):
-    def __init__(
-        self,
-        api_key: str,
-        base_url: str = "https://openrouter.ai/api/v1",
-        retry_config: RetryConfig | None = None,
-    ):
-        super().__init__(api_key, base_url, retry_config)
+    BASE_URL = "https://openrouter.ai/api/v1"
 
     async def _single_complete(
         self,
