@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from dotenv import load_dotenv
@@ -31,9 +31,15 @@ PROMPT = "Return a JSON object with today's forecast, including a summary and pr
 
 @dataclass
 class ForecastSchema:
-    location: str
-    summary: str
-    rain_probability: float
+    location: str = field(metadata={"description": "City or region for the forecast"})
+    summary: str = field(metadata={"description": "Short natural language forecast"})
+    rain_probability: float = field(
+        metadata={
+            "description": "Chance of precipitation as a float between 0 and 1",
+            "minimum": 0,
+            "maximum": 1,
+        }
+    )
 
 
 SHARED_SCHEMA = ResponseSchema.from_dataclass(ForecastSchema)
