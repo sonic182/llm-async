@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.3.3] - 2025-12-03
+### Changed
+- **OpenAIResponsesProvider**: Made `model` parameter optional in `acomplete()` method
+  - Allows calling `acomplete()` without specifying a model when using session-based conversations
+  - Model parameter is only included in API payload when explicitly provided
+  - Maintains backward compatibility - existing code continues to work unchanged
+
 ## [0.3.1] - 2025-11-08
 ### Added
 - **OpenAIResponsesProvider**: New provider for OpenAI's Responses API with advanced features:
@@ -66,7 +73,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.3.1...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.3.3...HEAD
+[0.3.3]: https://github.com/sonic182/llm-async/compare/0.3.1...0.3.3
 [0.3.1]: https://github.com/sonic182/llm-async/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/sonic182/llm-async/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/sonic182/llm-async/compare/0.1.1...0.2.0

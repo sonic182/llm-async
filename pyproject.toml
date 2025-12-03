@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "llm_async"
-version = "0.3.1"
+version = "0.3.3"
 description = "Multi-LLM Provider Library"
 readme = "README.md"
 license = "MIT"
