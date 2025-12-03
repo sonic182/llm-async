@@ -44,14 +44,16 @@ class OpenAIResponsesProvider(BaseProvider):
 
     async def acomplete(
         self,
-        model: str,
-        messages: Sequence[Message | Mapping[str, Any]],
+        model: str | None = None,
+        messages: Sequence[Message | Mapping[str, Any]] | None = None,
         stream: bool = False,
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Response:
+        if messages is None:
+            messages = []
         normalized_messages = _normalize_responses_messages(messages)
         return await self._single_complete(
             model,
@@ -321,7 +323,7 @@ class OpenAIResponsesProvider(BaseProvider):
 
     async def _single_complete(
         self,
-        model: str,
+        model: str | None,
         messages: list[dict[str, Any]],
         stream: bool = False,
         tools: list[Tool] | None = None,
@@ -332,10 +334,12 @@ class OpenAIResponsesProvider(BaseProvider):
         previous_response_id = kwargs.pop("previous_response_id", None)
 
         payload: dict[str, Any] = {
-            "model": model,
             "stream": stream,
             **kwargs,
         }
+
+        if model is not None:
+            payload["model"] = model
 
         if previous_response_id:
             payload["previous_response_id"] = previous_response_id
