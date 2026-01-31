@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from typing import Any
 
+from aiosonic import HeadersType  # type: ignore[import-untyped]
 from llm_async.models import Response, Tool
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.utils.http import post_json
@@ -19,13 +20,18 @@ class OpenRouterProvider(OpenAIProvider):
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
+        request_kwargs = dict(kwargs)
+        http_referer = request_kwargs.pop("http_referer", None)
+        x_title = request_kwargs.pop("x_title", None)
+
         payload = {
             "model": model,
             "messages": messages,
             "stream": stream,
-            **kwargs,
+            **request_kwargs,
         }
 
         schema_obj = ResponseSchema.coerce(response_schema)
@@ -37,27 +43,22 @@ class OpenRouterProvider(OpenAIProvider):
         if tool_choice:
             payload["tool_choice"] = tool_choice
 
-        # Add optional OpenRouter-specific headers
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
-
-        if "http_referer" in kwargs:
-            headers["HTTP-Referer"] = kwargs.pop("http_referer")
-        if "x_title" in kwargs:
-            headers["X-Title"] = kwargs.pop("x_title")
+        final_headers = self._headers_for_request(headers)
+        if http_referer:
+            final_headers["HTTP-Referer"] = http_referer
+        if x_title:
+            final_headers["X-Title"] = x_title
 
         if stream:
             return self._stream_response(
-                f"{self.base_url}/chat/completions", payload, headers, "openai"
+                f"{self.base_url}/chat/completions", payload, final_headers, "openai"
             )
 
         response = await post_json(
             self.client,
             f"{self.base_url}/chat/completions",
             payload,
-            headers,
+            final_headers,
             retry_config=self.retry_config,
         )
         main_response = self._parse_response(response)

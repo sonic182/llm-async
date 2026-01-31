@@ -1,6 +1,8 @@
 from collections.abc import Callable, Mapping
 from typing import Any
 
+from aiosonic import HeadersType  # type: ignore[import-untyped]
+
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
@@ -88,6 +90,7 @@ class OpenAIProvider(BaseProvider):
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {
@@ -106,26 +109,21 @@ class OpenAIProvider(BaseProvider):
         if tool_choice:
             payload["tool_choice"] = tool_choice
 
+        final_headers = self._headers_for_request(headers)
+
         if stream:
             return self._stream_response(
                 f"{self.base_url}/chat/completions",
                 payload,
-                {
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json",
-                },
+                final_headers,
                 "openai",
             )
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         response = await post_json(
             self.client,
             f"{self.base_url}/chat/completions",
             payload,
-            headers,
+            final_headers,
             retry_config=self.retry_config,
         )
         main_response = self._parse_response(response)

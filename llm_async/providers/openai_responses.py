@@ -1,6 +1,8 @@
 from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from typing import Any
 
+from aiosonic import HeadersType  # type: ignore[import-untyped]
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response import StreamChunk
 from llm_async.models.response_schema import ResponseSchema
@@ -50,6 +52,7 @@ class OpenAIResponsesProvider(BaseProvider):
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         if messages is None:
@@ -62,6 +65,7 @@ class OpenAIResponsesProvider(BaseProvider):
             tools,
             tool_choice,
             response_schema=response_schema,
+            headers=headers,
             **kwargs,
         )
 
@@ -270,7 +274,7 @@ class OpenAIResponsesProvider(BaseProvider):
         ).to_responses_api_message()
 
     def _stream_responses_request(
-        self, url: str, payload: dict[str, Any], headers: dict[str, str]
+        self, url: str, payload: dict[str, Any], headers: HeadersType
     ) -> Response:
         async def _gen():
             async for chunk in stream_json(
@@ -329,6 +333,7 @@ class OpenAIResponsesProvider(BaseProvider):
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         previous_response_id = kwargs.pop("previous_response_id", None)
@@ -355,23 +360,20 @@ class OpenAIResponsesProvider(BaseProvider):
         if tool_choice:
             payload["tool_choice"] = self._normalize_tool_choice(tool_choice)
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
+        final_headers = self._headers_for_request(headers)
 
         if stream:
             return self._stream_responses_request(
                 f"{self.base_url}/responses",
                 payload,
-                headers,
+                final_headers,
             )
 
         response = await post_json(
             self.client,
             f"{self.base_url}/responses",
             payload,
-            headers,
+            final_headers,
             retry_config=self.retry_config,
         )
         main_response = self._parse_response(response)

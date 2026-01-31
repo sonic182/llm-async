@@ -1,6 +1,7 @@
 from collections.abc import Callable, Mapping
 from typing import Any
 
+from aiosonic import HeadersType  # type: ignore[import-untyped]
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
@@ -100,6 +101,7 @@ class ClaudeProvider(BaseProvider):
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         payload = {
@@ -126,22 +128,27 @@ class ClaudeProvider(BaseProvider):
         if tool_choice:
             payload["tool_choice"] = tool_choice
 
-        headers = {
-            "x-api-key": self.api_key,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        }
+        final_headers = self._headers_for_request(headers)
 
         if stream:
             payload["stream"] = True
-            return self._stream_response(f"{self.base_url}/messages", payload, headers, "claude")
+            return self._stream_response(
+                f"{self.base_url}/messages", payload, final_headers, "claude"
+            )
         else:
             response = await post_json(
                 self.client,
                 f"{self.base_url}/messages",
                 payload,
-                headers,
+                final_headers,
                 retry_config=self.retry_config,
             )
-            main_response = self._parse_response(response)
-            return Response(response, self.__class__.name(), main_response)
+        main_response = self._parse_response(response)
+        return Response(response, self.__class__.name(), main_response)
+
+    def _default_headers(self) -> HeadersType:
+        return {
+            "x-api-key": self.api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }

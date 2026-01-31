@@ -280,6 +280,7 @@ async def test_openrouter_custom_headers() -> None:
         await provider.acomplete(
             model="openrouter/model",
             messages=[{"role": "user", "content": "Hi"}],
+            headers={"X-Custom": "value"},
             http_referer="https://example.com",
             x_title="My App",
         )
@@ -289,6 +290,28 @@ async def test_openrouter_custom_headers() -> None:
         headers = call_args[1]["headers"]
         assert headers["HTTP-Referer"] == "https://example.com"
         assert headers["X-Title"] == "My App"
+        assert headers["X-Custom"] == "value"
+
+
+@pytest.mark.asyncio
+async def test_openrouter_headers_parameter_accepts_list() -> None:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
+        mock_client = AsyncMock()
+        MockClient.return_value = mock_client
+        mock_response = AsyncMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"choices": [{"message": {"content": "Hello!"}}]}
+        mock_client.post.return_value = mock_response
+
+        provider = OpenRouterProvider(api_key="test_key")
+        await provider.acomplete(
+            model="openrouter/model",
+            messages=[{"role": "user", "content": "Hi"}],
+            headers=[("X-Trace", "abc")],
+        )
+
+        headers = mock_client.post.call_args[1]["headers"]
+        assert headers["X-Trace"] == "abc"
 
 
 @pytest.mark.asyncio

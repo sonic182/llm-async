@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 import aiosonic  # type: ignore[import-untyped]
+from aiosonic import HeadersType  # type: ignore[import-untyped]
 
 from ..models import StreamChunk
 from .retry import DEFAULT_RETRY_EXCEPTIONS, RetryConfig, retry_http  # type: ignore
@@ -14,7 +15,7 @@ async def _post_json_core(
     client: aiosonic.HTTPClient,
     url: str,
     json_data: dict[str, Any],
-    headers: dict[str, str],
+    headers: HeadersType,
 ) -> dict[str, Any]:
     """Core POST JSON function without retry logic."""
     response = await client.post(url, json=json_data, headers=headers)
@@ -28,7 +29,7 @@ async def post_json(
     client: aiosonic.HTTPClient,
     url: str,
     json_data: dict[str, Any],
-    headers: dict[str, str],
+    headers: HeadersType,
     retry_config: object | None = None,
 ) -> dict[str, Any]:
     """POST JSON with optional retry logic.
@@ -68,7 +69,7 @@ async def stream_json(
     client: aiosonic.HTTPClient,
     url: str,
     json_data: dict[str, Any],
-    headers: dict[str, str],
+    headers: HeadersType,
     retry_config: RetryConfig | None = RetryConfig(),
 ) -> AsyncIterator[dict[str, Any]]:
     """POST `json_data` to `url` and yield parsed JSON objects from SSE-style stream.

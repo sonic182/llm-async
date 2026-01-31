@@ -2,6 +2,7 @@ from collections.abc import Callable, Mapping, Sequence
 from typing import Any, Literal
 
 import aiosonic  # type: ignore[import-untyped]
+from aiosonic import HeadersType  # type: ignore[import-untyped]
 
 from llm_async.models import Message, Response, Tool
 from llm_async.models.message import message_to_dict, normalize_messages, validate_messages
@@ -40,6 +41,7 @@ class BaseProvider:
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         normalized_messages = normalize_messages(messages)
@@ -52,6 +54,7 @@ class BaseProvider:
             tools,
             tool_choice,
             response_schema=response_schema,
+            headers=headers,
             **kwargs,
         )
 
@@ -63,6 +66,7 @@ class BaseProvider:
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         raise NotImplementedError
@@ -84,11 +88,29 @@ class BaseProvider:
         """Execute tools and return results in provider-specific format."""
         raise NotImplementedError
 
+    def _default_headers(self) -> HeadersType:
+        return {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+
+    def _headers_for_request(self, headers: HeadersType | None = None) -> dict[str, str]:
+        merged: dict[str, str] = dict(self._default_headers())
+        if not headers:
+            return merged
+        if isinstance(headers, dict):
+            merged.update(headers)
+            return merged
+        for key, value in headers:
+            merged[key] = value
+        return merged
+
     async def request(
         self,
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"],
         path: str,
         json_data: dict[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Make a request to the provider's API.
@@ -104,23 +126,21 @@ class BaseProvider:
         """
         import json
 
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            **kwargs,
-        }
+        final_headers = self._headers_for_request(headers)
+        for key, value in kwargs.items():
+            final_headers[key] = str(value)
         url = f"{self.base_url}{path}"
 
         if method == "GET":
-            response = await self.client.get(url, headers=headers)
+            response = await self.client.get(url, headers=final_headers)
         elif method == "POST":
-            response = await self.client.post(url, headers=headers, json=json_data or {})
+            response = await self.client.post(url, headers=final_headers, json=json_data or {})
         elif method == "PUT":
-            response = await self.client.put(url, headers=headers, json=json_data or {})
+            response = await self.client.put(url, headers=final_headers, json=json_data or {})
         elif method == "DELETE":
-            response = await self.client.delete(url, headers=headers)
+            response = await self.client.delete(url, headers=final_headers)
         elif method == "PATCH":
-            response = await self.client.patch(url, headers=headers, json=json_data or {})
+            response = await self.client.patch(url, headers=final_headers, json=json_data or {})
         else:
             raise ValueError(f"Unsupported HTTP method: {method}")
 
@@ -130,21 +150,20 @@ class BaseProvider:
         text = await response.text()
         return json.loads(text)
 
-    async def _http_post(self, endpoint: str, data: dict[str, Any]) -> dict[str, Any]:
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
+    async def _http_post(
+        self, endpoint: str, data: dict[str, Any], headers: HeadersType | None = None
+    ) -> dict[str, Any]:
+        final_headers = self._headers_for_request(headers)
         return await post_json(
             self.client,
             f"{self.base_url}{endpoint}",
             data,
-            headers,
+            final_headers,
             retry_config=self.retry_config,
         )
 
     def _stream_response(
-        self, url: str, payload: dict[str, Any], headers: dict[str, str], parse_provider: str
+        self, url: str, payload: dict[str, Any], headers: HeadersType, parse_provider: str
     ):
         """Return a Response with a stream_generator using shared stream logic."""
 

@@ -1,6 +1,7 @@
 from collections.abc import Callable, Mapping
 from typing import Any
 
+from aiosonic import HeadersType  # type: ignore[import-untyped]
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.models.tool_call import ToolCall
@@ -149,11 +150,12 @@ class GoogleProvider(BaseProvider):
         tools: list[Tool] | None = None,
         tool_choice: str | dict[str, Any] | None = None,
         response_schema: ResponseSchema | Mapping[str, Any] | None = None,
+        headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
         """Send completion request to Google's Gemini API."""
         payload = self._build_request_payload(messages, tools, response_schema, **kwargs)
-        headers = self._build_headers()
+        headers_obj = self._headers_for_request(headers)
 
         # For Google AI API, the base URL already includes the model path
         # So we just need to append the action suffix
@@ -164,10 +166,10 @@ class GoogleProvider(BaseProvider):
         url = f"{self.base_url}{model}:{suffix}"
 
         if stream:
-            return self._stream_response(url, payload, headers, "google")
+            return self._stream_response(url, payload, headers_obj, "google")
 
         response = await post_json(
-            self.client, url, payload, headers, retry_config=self.retry_config
+            self.client, url, payload, headers_obj, retry_config=self.retry_config
         )
         main_response = self._parse_response(response)
         return Response(response, self.__class__.name(), main_response)
@@ -274,9 +276,8 @@ class GoogleProvider(BaseProvider):
 
         return formatted_messages
 
-    def _build_headers(self) -> dict[str, str]:
-        """Build headers based on authentication mode."""
-        headers = {"Content-Type": "application/json"}
+    def _default_headers(self) -> HeadersType:
+        headers: dict[str, str] = {"Content-Type": "application/json"}
 
         if self.vertex_config:
             token = self.bearer_token
@@ -287,6 +288,9 @@ class GoogleProvider(BaseProvider):
             headers["X-GOOG-API-KEY"] = self.api_key
 
         return headers
+
+    def _build_headers(self) -> dict[str, str]:
+        return dict(self._default_headers())
 
     def _build_vertex_url(self, vertex_config: dict[str, Any]) -> str:
         """Build the Vertex AI API URL."""
