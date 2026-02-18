@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-02-18
+
 ### Changed
 - **HTTP client configuration**: Enabled provider-level `http2` flag passthrough to `aiosonic.HTTPClient`
   - `BaseProvider` now forwards `http2=True` when constructing the underlying HTTP client
@@ -83,7 +85,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.3.3...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/sonic182/llm-async/compare/0.3.3...0.4.0
 [0.3.3]: https://github.com/sonic182/llm-async/compare/0.3.1...0.3.3
 [0.3.1]: https://github.com/sonic182/llm-async/compare/0.3.0...0.3.1
 [0.3.0]: https://github.com/sonic182/llm-async/compare/0.2.0...0.3.0
