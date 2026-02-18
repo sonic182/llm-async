@@ -1,5 +1,7 @@
 from typing import Any
 
+from unittest.mock import patch
+
 import pytest
 
 from llm_async.models import Tool
@@ -7,9 +9,28 @@ from llm_async.providers.base import BaseProvider
 
 
 def test_base_init() -> None:
-    provider = BaseProvider(api_key="test_key", base_url="https://test.com")
-    assert provider.api_key == "test_key"
-    assert provider.base_url == "https://test.com"
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as mock_http_client:
+        provider = BaseProvider(api_key="test_key", base_url="https://test.com")
+        assert provider.api_key == "test_key"
+        assert provider.base_url == "https://test.com"
+        mock_http_client.assert_called_once_with(http2=False)
+
+
+def test_base_init_http2_enabled() -> None:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as mock_http_client:
+        BaseProvider(api_key="test_key", base_url="https://test.com", http2=True)
+        mock_http_client.assert_called_once_with(http2=True)
+
+
+def test_base_init_http2_with_client_kwargs() -> None:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as mock_http_client:
+        BaseProvider(
+            api_key="test_key",
+            base_url="https://test.com",
+            client_kwargs={"verify": False, "timeout": 10},
+            http2=True,
+        )
+        mock_http_client.assert_called_once_with(verify=False, timeout=10, http2=True)
 
 
 @pytest.mark.asyncio

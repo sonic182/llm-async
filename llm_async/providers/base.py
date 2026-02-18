@@ -25,7 +25,9 @@ class BaseProvider:
     ):
         self.api_key = api_key
         self.base_url = base_url or self.BASE_URL
-        self.client = aiosonic.HTTPClient(**(client_kwargs or {}))
+        http_client_kwargs = dict(client_kwargs or {})
+        http_client_kwargs["http2"] = http2
+        self.client = aiosonic.HTTPClient(**http_client_kwargs)
         self.http2 = http2
         self.retry_config = retry_config
 

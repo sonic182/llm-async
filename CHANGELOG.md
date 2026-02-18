@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- **HTTP client configuration**: Enabled provider-level `http2` flag passthrough to `aiosonic.HTTPClient`
+  - `BaseProvider` now forwards `http2=True` when constructing the underlying HTTP client
+  - Added constructor tests to verify default behavior and interaction with `client_kwargs`
+- **Dependencies**:
+  - Updated `aiosonic` requirement to `>=0.31.0`
+  - Updated Python constraint to `>=3.10,<3.15` to match `aiosonic` 0.31.0 compatibility
+- **Documentation**:
+  - Added README usage section showing how to enable HTTP/2 with `http2=True`
+
 ## [0.3.3] - 2025-12-03
 ### Changed
 - **OpenAIResponsesProvider**: Made `model` parameter optional in `acomplete()` method

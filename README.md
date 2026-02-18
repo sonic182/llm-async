@@ -23,6 +23,7 @@ High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and 
     - [OpenRouter](#openrouter)
     - [Google Gemini](#google-gemini)
   - [Custom Base URL](#custom-base-url)
+  - [HTTP/2](#http2)
   - [Direct API Requests](#direct-api-requests)
   - [Tool Usage](#tool-usage)
   - [Structured Outputs](#structured-outputs)
@@ -188,6 +189,31 @@ provider = OpenAIProvider(
     base_url="https://custom-openai-endpoint.com/v1"
 )
 ```
+
+### HTTP/2
+
+`llm_async` providers support enabling HTTP/2 on the underlying `aiosonic.HTTPClient`.
+
+```python
+from llm_async import OpenAIProvider
+
+provider = OpenAIProvider(
+    api_key="your-openai-api-key",
+    http2=True,
+)
+```
+
+You can also combine it with `client_kwargs`:
+
+```python
+provider = OpenAIProvider(
+    api_key="your-openai-api-key",
+    http2=True,
+    client_kwargs={"timeout": 30, "verify": True},
+)
+```
+
+This works for all providers that inherit from `BaseProvider` (`OpenAIProvider`, `OpenRouterProvider`, `ClaudeProvider`, `GoogleProvider`, and `OpenAIResponsesProvider`).
 
 ### Direct API Requests
 
