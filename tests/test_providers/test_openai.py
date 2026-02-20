@@ -22,6 +22,29 @@ def test_openai_serializes_message_instances() -> None:
 
 
 @pytest.mark.asyncio
+async def test_openai_acomplete_with_message_instances() -> None:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
+        mock_client = AsyncMock()
+        MockClient.return_value = mock_client
+        mock_response = AsyncMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"choices": [{"message": {"content": "Hello!"}}]}
+        mock_client.post.return_value = mock_response
+
+        provider = OpenAIProvider(api_key="test_key")
+        result = await provider.acomplete(
+            model="gpt-4o-mini",
+            messages=[
+                Message(role="system", content="You are a helpful assistant."),
+                Message(role="user", content="Hi"),
+            ],
+        )
+        assert isinstance(result, Response)
+        assert result.main_response.content == "Hello!"
+        mock_client.post.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_openai_acomplete_non_stream_success() -> None:
     with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()

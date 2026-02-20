@@ -36,7 +36,8 @@ The main package is `llm_async`, managed with Poetry (see `pyproject.toml` for c
 
 
 ## Library Code Style
-- **No comments**: Do not add comments in library code. Keep the codebase clean and self-documenting.
+- **No comments by default**: Do not add comments in library code unless explicitly requested.
+- **Docstrings on request**: Add docstrings in library code only when the user explicitly asks for them.
 
 ## Git Command Safety
 - **Do not run any git commands that modify the repository without explicit user approval.**

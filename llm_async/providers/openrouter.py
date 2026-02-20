@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from collections.abc import Mapping
 from typing import Any
 
 from aiosonic import HeadersType  # type: ignore[import-untyped]
+
 from llm_async.models import Response, Tool
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.utils.http import post_json

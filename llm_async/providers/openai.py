@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable, Mapping
 from typing import Any
 
@@ -12,6 +14,8 @@ from .base import BaseProvider
 
 
 class OpenAIProvider(BaseProvider):
+    """OpenAI Chat Completions provider implementation."""
+
     BASE_URL = "https://api.openai.com/v1"
 
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
@@ -93,6 +97,8 @@ class OpenAIProvider(BaseProvider):
         headers: HeadersType | None = None,
         **kwargs: Any,
     ) -> Response:
+        """Send a single completion request and return a normalized response."""
+
         payload = {
             "model": model,
             "messages": messages,
