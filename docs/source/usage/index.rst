@@ -9,4 +9,5 @@ Usage
    tools
    structured
    responses_api
+   xai_responses
    advanced
