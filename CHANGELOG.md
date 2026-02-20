@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Sphinx documentation**: Full docs site with `sphinx_rtd_theme` and autodoc for all providers and models
+  - Pages: installation, quickstart, usage (basic, streaming, tools, structured outputs, OpenAI Responses API, advanced), development, contributing
+  - API reference with autodoc for `BaseProvider`, `OpenAIProvider`, `OpenAIResponsesProvider`, `ClaudeProvider`, `GoogleProvider`, `OpenRouterProvider`, and all models
+- **LICENSE.md**: MIT license file (2025)
+- **Test**: Added `test_openai_acomplete_with_message_instances` to verify `Message` instances work directly as `acomplete` input
+
+### Changed
+- **CI**: Bumped Python version to 3.12 in `.github/workflows/ci.yml` to satisfy Sphinx and `sphinx-rtd-theme` requirements
+- **Message promotion**: All documentation examples now use `Message` class instead of raw dicts
+- **`pyproject.toml`**: Added `docs` dependency group (`sphinx`, `sphinx-rtd-theme`); relaxed Python upper bound to `<4.0`
+- **Providers**: Added `from __future__ import annotations` to all provider and `utils/http.py` files to fix `HeadersType | None` union syntax at class-definition time under mocked imports
+- **Makefile**: Added `docs` to `.PHONY` so `make docs` runs correctly when a `docs/` directory exists
+- **`.gitignore`**: Added `docs/build/` to ignored paths
+
 ## [0.4.0] - 2026-02-18
 
 ### Changed
