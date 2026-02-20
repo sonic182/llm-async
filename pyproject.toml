@@ -29,7 +29,7 @@ packages = [{include = "llm_async"}]
 "Changelog" = "https://github.com/sonic182/llm-async/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.15"
+python = ">=3.10,<4.0"
 aiosonic = ">=0.31.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -42,6 +42,9 @@ ruff = "*"
 pytest-black = "*"
 pytest-ruff = "*"
 pytest-sugar = "*"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = {version = "^9.1.0", python = ">=3.12,<3.15"}
 
 [build-system]
 requires = ["poetry-core"]
