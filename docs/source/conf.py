@@ -20,6 +20,7 @@ extensions = [
 ]
 
 autodoc_mock_imports = ["aiosonic"]
+autoclass_content = "both"
 
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -30,3 +31,8 @@ exclude_patterns = []
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+
+html_theme_options = {
+    "navigation_depth": 4,
+    "collapse_navigation": False,
+}

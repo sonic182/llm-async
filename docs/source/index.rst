@@ -75,10 +75,10 @@ Why llm-async?
    usage/index
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: API Reference
 
-   providers/openai
+   providers/index
 
 .. toctree::
    :maxdepth: 1
