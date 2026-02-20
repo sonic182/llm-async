@@ -8,6 +8,7 @@ High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and 
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#)
 [![Coverage](https://img.shields.io/badge/coverage-%E2%80%94-blue.svg)](#)
 [![Code Style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Docs](https://readthedocs.org/projects/llm-async/badge/?version=latest)](https://llm-async.readthedocs.io/en/latest/)
 
 ## Table of Contents
 
