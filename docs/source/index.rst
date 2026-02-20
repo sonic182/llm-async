@@ -1,9 +1,11 @@
-llm-async — Async multi-provider LLM client for Python
+Llm Async — Async multi-provider LLM client for Python
 =======================================================
 
 High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and OpenRouter.
 Built on top of `aiosonic <https://github.com/sonic182/aiosonic>`_ for fast, low-latency HTTP
 and true asyncio streaming across providers.
+
+The project is hosted on GitHub: `https://github.com/sonic182/llm-async <https://github.com/sonic182/llm-async>`_
 
 Features
 --------

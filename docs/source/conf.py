@@ -4,7 +4,7 @@ import sys
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "llm-async"
+project = "Llm Async"
 copyright = "2026, Johanderson"
 author = "Johanderson"
 release = "0.4.0"
