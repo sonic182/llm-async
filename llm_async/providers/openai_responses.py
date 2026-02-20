@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from collections.abc import Callable, Mapping, Sequence
-from collections.abc import Mapping, Sequence
 from typing import Any
 
 from aiosonic import HeadersType  # type: ignore[import-untyped]
+
 from llm_async.models import Message, Response, Tool
 from llm_async.models.response import StreamChunk
 from llm_async.models.response_schema import ResponseSchema

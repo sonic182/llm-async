@@ -45,6 +45,7 @@ pytest-sugar = "*"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = {version = "^9.1.0", python = ">=3.12,<3.15"}
+sphinx-rtd-theme = "^3.1.0"
 
 [build-system]
 requires = ["poetry-core"]

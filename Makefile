@@ -14,6 +14,7 @@ help:
 	@echo "  test-single     - run single test: make test-single TEST=\"test_name\""
 	@echo "  lint            - run ruff checks"
 	@echo "  format          - run ruff auto-format"
+	@echo "  docs            - build documentation (Sphinx)"
 	@echo "  clear           - remove build/artifacts/cache"
 	@echo "  build           - build distributions (depends on clear)"
 	@echo "  upload_pypi     - build then upload dist/* to PyPI via twine"
@@ -33,6 +34,9 @@ lint:
 format:
 	$(RUFF_FORMAT)
 
+docs:
+	poetry run sphinx-build -b html docs/source docs/build/html
+
 clear:
 	-rm -rf $(shell find . -name __pycache__) build dist .mypy_cache llm_async.egg-info .eggs
 
@@ -48,4 +52,4 @@ publish: upload_pypi
 release: publish
 	@echo "Release complete"
 
-.PHONY: help test test-single lint format clear build upload_pypi publish release
+.PHONY: help test test-single lint format docs clear build upload_pypi publish release
