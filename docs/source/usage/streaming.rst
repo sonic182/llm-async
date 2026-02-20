@@ -8,12 +8,13 @@ that yields :class:`~llm_async.models.StreamChunk` objects as tokens arrive.
 
    import asyncio
    from llm_async import OpenAIProvider
+   from llm_async.models.message import Message
 
    async def main():
        provider = OpenAIProvider(api_key="your-openai-api-key")
        async for chunk in await provider.acomplete(
            model="gpt-4o-mini",
-           messages=[{"role": "user", "content": "Give me a recipe for tortilla española."}],
+           messages=[Message("user", "Give me a recipe for tortilla española.")],
            stream=True,
        ):
            print(chunk.delta, end="", flush=True)

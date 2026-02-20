@@ -7,16 +7,23 @@ Basic completion with OpenAI:
 
    import asyncio
    from llm_async import OpenAIProvider
+   from llm_async.models.message import Message
 
    async def main():
        provider = OpenAIProvider(api_key="YOUR_OPENAI_API_KEY")
        response = await provider.acomplete(
            model="gpt-4o-mini",
-           messages=[{"role": "user", "content": "Give me 3 ideas for a CLI tool."}],
+           messages=[
+               Message("system", "You are a helpful assistant."),
+               Message("user", "Give me 3 ideas for a CLI tool."),
+           ],
        )
        print(response.main_response.content)
 
    asyncio.run(main())
+
+:class:`~llm_async.models.message.Message` is the preferred way to build messages.
+Plain dicts are also accepted.
 
 Streaming tokens as they arrive:
 
@@ -24,12 +31,13 @@ Streaming tokens as they arrive:
 
    import asyncio
    from llm_async import OpenAIProvider
+   from llm_async.models.message import Message
 
    async def main():
        provider = OpenAIProvider(api_key="YOUR_OPENAI_API_KEY")
        async for chunk in await provider.acomplete(
            model="gpt-4o-mini",
-           messages=[{"role": "user", "content": "Give me 3 ideas for a CLI tool."}],
+           messages=[Message("user", "Give me 3 ideas for a CLI tool.")],
            stream=True,
        ):
            print(chunk.delta, end="", flush=True)

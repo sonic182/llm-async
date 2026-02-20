@@ -11,6 +11,7 @@ Claude does not support structured outputs.
    import asyncio
    import json
    from llm_async import OpenAIProvider
+   from llm_async.models.message import Message
    from llm_async.models.response_schema import ResponseSchema
    from llm_async.providers.google import GoogleProvider
 
@@ -30,7 +31,7 @@ Claude does not support structured outputs.
        openai_provider = OpenAIProvider(api_key="your-openai-key")
        response = await openai_provider.acomplete(
            model="gpt-4o-mini",
-           messages=[{"role": "user", "content": "What is the capital of France?"}],
+           messages=[Message("user", "What is the capital of France?")],
            response_schema=response_schema
        )
        result = json.loads(response.main_response.content)
@@ -39,7 +40,7 @@ Claude does not support structured outputs.
        google_provider = GoogleProvider(api_key="your-google-key")
        response = await google_provider.acomplete(
            model="gemini-2.5-flash",
-           messages=[{"role": "user", "content": "What is the capital of France?"}],
+           messages=[Message("user", "What is the capital of France?")],
            response_schema=response_schema
        )
        result = json.loads(response.main_response.content)

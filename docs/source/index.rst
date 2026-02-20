@@ -78,6 +78,7 @@ Why llm-async?
    :maxdepth: 2
    :caption: API Reference
 
+   models
    providers/index
 
 .. toctree::

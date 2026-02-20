@@ -9,6 +9,7 @@ pass it to ``acomplete``, then execute the returned tool call and send the resul
    import asyncio
    import os
    from llm_async.models import Tool
+   from llm_async.models.message import Message
    from llm_async.providers import OpenAIProvider
 
    calculator_tool = Tool(
@@ -54,7 +55,7 @@ pass it to ``acomplete``, then execute the returned tool call and send the resul
    async def main():
        provider = OpenAIProvider(api_key=os.getenv("OPENAI_API_KEY"))
        tools_map = {"calculator": calculator}
-       messages = [{"role": "user", "content": "What is 15 + 27?"}]
+       messages = [Message("user", "What is 15 + 27?")]
 
        response = await provider.acomplete(
            model="gpt-4o-mini",

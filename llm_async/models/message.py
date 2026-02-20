@@ -13,6 +13,27 @@ _ALLOWED_ROLES: tuple[Role, ...] = ("system", "user", "assistant", "tool")
 
 @dataclass
 class Message:
+    """Represents a single chat message.
+
+    The preferred way to build messages for ``acomplete``. Accepts plain dicts
+    as well, but using ``Message`` provides role validation and type safety.
+
+    Example::
+
+        from llm_async.models.message import Message
+
+        messages = [
+            Message("system", "You are a helpful assistant."),
+            Message("user", "Hello, how are you?"),
+        ]
+
+    Args:
+        role: One of ``"system"``, ``"user"``, ``"assistant"``, ``"tool"``.
+        content: Text content or a list of content parts (for multimodal).
+        tool_calls: Optional list of tool calls attached to this message.
+        original: Raw provider payload, used internally when round-tripping responses.
+    """
+
     role: Role
     content: Content
     tool_calls: list[ToolCall] | None = None
