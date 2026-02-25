@@ -43,6 +43,10 @@ HTTP/2 is supported by all providers that inherit from ``BaseProvider``:
 ``OpenAIProvider``, ``OpenRouterProvider``, ``ClaudeProvider``, ``GoogleProvider``,
 and ``OpenAIResponsesProvider``.
 
+See also ``examples/openai_responses_repl_http2_prompt_cache.py`` for an interactive
+OpenAI Responses REPL that combines HTTP/2 with tool calling, prompt caching, and
+``previous_response_id`` conversation chaining.
+
 Direct API Requests
 -------------------
 

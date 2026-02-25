@@ -80,3 +80,53 @@ How it works:
 5. Cached prefixes remain active for 5–10 minutes of inactivity (up to 1 hour off-peak).
 
 See ``examples/openai_responses_tool_call_with_previous_id.py`` for a complete working example.
+
+Interactive REPL Example (HTTP/2 + Prompt Cache + Tool Calls)
+--------------------------------------------------------------
+
+For a full interactive example, see ``examples/openai_responses_repl_http2_prompt_cache.py``.
+It demonstrates:
+
+- ``OpenAIResponsesProvider`` over HTTP/2
+- Prompt caching with ``prompt_cache_key``
+- Sending latest ``previous_response_id`` between turns
+- Calculator function tool call round-trips
+- Configurable state strategy via CLI (full history resend vs stateless chaining)
+
+Default behavior:
+
+- Model: ``gpt-5-mini``
+- Reasoning effort: ``medium``
+- State mode: ``previous_response_id``
+
+Run with defaults:
+
+.. code-block:: bash
+
+   poetry run python examples/openai_responses_repl_http2_prompt_cache.py
+
+Use stateless chaining explicitly:
+
+.. code-block:: bash
+
+   poetry run python examples/openai_responses_repl_http2_prompt_cache.py --state-mode previous_response_id
+
+Resend full conversation history each turn:
+
+.. code-block:: bash
+
+   poetry run python examples/openai_responses_repl_http2_prompt_cache.py --state-mode full
+
+Disable HTTP/2:
+
+.. code-block:: bash
+
+   poetry run python examples/openai_responses_repl_http2_prompt_cache.py --no-http2
+
+Set prompt cache retention (model support varies):
+
+.. code-block:: bash
+
+   poetry run python examples/openai_responses_repl_http2_prompt_cache.py --prompt-cache-retention in-memory
+
+Note: some models may reject ``prompt_cache_retention``. If unsupported, omit the flag.
