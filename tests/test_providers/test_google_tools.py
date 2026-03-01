@@ -113,6 +113,6 @@ def test_response_schema_google_helper() -> None:
     )
 
     config = schema.for_google()
-    cleaned = config["responseSchema"]
-    assert "additionalProperties" not in cleaned
-    assert "additionalProperties" not in cleaned["properties"]["x"]
+    google_schema = config["responseSchema"]
+    assert google_schema["additionalProperties"] is True
+    assert google_schema["properties"]["x"]["additionalProperties"] is False
