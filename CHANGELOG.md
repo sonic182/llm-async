@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-03-01
+
+### Added
+- **Examples**: Added `examples/openai_responses_repl_http2_prompt_cache.py` for an interactive OpenAI Responses API REPL flow with prompt cache and HTTP/2 usage.
+- **xAI support docs/examples**: Added `examples/xai_responses.py` and a dedicated docs page at `docs/source/usage/xai_responses.rst`.
+
+### Changed
+- **Google structured outputs**: `ResponseSchema.for_google()` now preserves user-provided `additionalProperties` fields instead of stripping them.
+- **Documentation**: Updated usage/navigation docs and README polish (including Read the Docs badge and caption/content improvements).
+
 ## [0.4.1] - 2026-02-20
 
 ### Added
@@ -102,7 +112,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.4.2...HEAD
+[0.4.2]: https://github.com/sonic182/llm-async/compare/0.4.1...0.4.2
 [0.4.1]: https://github.com/sonic182/llm-async/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/sonic182/llm-async/compare/0.3.3...0.4.0
 [0.3.3]: https://github.com/sonic182/llm-async/compare/0.3.1...0.3.3
