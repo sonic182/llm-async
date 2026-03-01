@@ -40,7 +40,7 @@ The main package is `llm_async`, managed with Poetry (see `pyproject.toml` for c
 - **Docstrings on request**: Add docstrings in library code only when the user explicitly asks for them.
 
 ## Git Command Safety
-- **Do not run any git commands that modify the repository without explicit user approval.**
+- **Do not run any git commands that modify the repository without explicit user approval unless user explicit asked for it.**
 - Avoid the following commands unless the user explicitly requests and approves them:
   - `git add` (staging files)
   - `git commit`, `git commit --amend` (creating or amending commits)

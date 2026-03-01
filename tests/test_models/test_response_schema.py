@@ -17,7 +17,7 @@ def test_response_schema_coerce_accepts_mapping() -> None:
     assert coerced.schema["properties"]["field"] == {"type": "string"}
 
 
-def test_response_schema_for_google_strips_additional_properties() -> None:
+def test_response_schema_for_google_keeps_additional_properties() -> None:
     schema = ResponseSchema(
         schema={
             "type": "object",
@@ -29,12 +29,12 @@ def test_response_schema_for_google_strips_additional_properties() -> None:
         }
     )
     payload = schema.for_google()
-    cleaned = payload["responseSchema"]
-    assert "additionalProperties" not in cleaned
-    assert "additionalProperties" not in cleaned["properties"]["x"]
-    inner_list = cleaned["properties"]["y"]
+    google_schema = payload["responseSchema"]
+    assert google_schema["additionalProperties"] is True
+    assert google_schema["properties"]["x"]["additionalProperties"] is False
+    inner_list = google_schema["properties"]["y"]
     assert isinstance(inner_list, list)
-    assert "additional_properties" not in inner_list[0]
+    assert inner_list[0]["additional_properties"] is True
 
 
 def test_response_schema_for_openai_responses() -> None:

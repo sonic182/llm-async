@@ -51,17 +51,5 @@ class ResponseSchema:
     def for_google(self) -> dict[str, Any]:
         return {
             "responseMimeType": self.mime_type,
-            "responseSchema": self._remove_additional_properties(deepcopy(self.schema)),
+            "responseSchema": deepcopy(self.schema),
         }
-
-    def _remove_additional_properties(self, schema: Any) -> Any:
-        if isinstance(schema, dict):
-            cleaned: dict[str, Any] = {}
-            for key, value in schema.items():
-                if key in {"additionalProperties", "additional_properties"}:
-                    continue
-                cleaned[key] = self._remove_additional_properties(value)
-            return cleaned
-        if isinstance(schema, list):
-            return [self._remove_additional_properties(item) for item in schema]
-        return schema
