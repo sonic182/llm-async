@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-03-07
+
+### Added
+- **Example**: Added `examples/openrouter_reasoning_fallback.py` to demonstrate handling OpenRouter reasoning responses that omit standard content fields.
+
+### Changed
+- **OpenRouter parsing**: Improved response parsing fallback logic for reasoning-style outputs so content is recovered when OpenRouter returns reasoning data without the usual text structure.
+- **Tests**: Added provider coverage for the OpenRouter reasoning fallback path and the related OpenAI parser behavior.
+
 ## [0.4.2] - 2026-03-01
 
 ### Added
