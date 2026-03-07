@@ -36,6 +36,40 @@ async def test_openrouter_acomplete_non_stream_success() -> None:
 
 
 @pytest.mark.asyncio
+async def test_openrouter_acomplete_uses_reasoning_when_content_is_missing() -> None:
+    with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
+        mock_client = AsyncMock()
+        MockClient.return_value = mock_client
+        mock_response = AsyncMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "reasoning": '{\n  "answer": {"kind": "text", "content": "Pong."}\n}',
+                    }
+                }
+            ]
+        }
+        mock_client.post.return_value = mock_response
+
+        provider = OpenRouterProvider(api_key="test_key")
+        result = await provider.acomplete(
+            model="z-ai/glm-4.7-flash", messages=[{"role": "user", "content": "ping"}]
+        )
+
+        assert isinstance(result, Response)
+        assert result.main_response is not None
+        assert (
+            result.main_response.content
+            == '{\n  "answer": {"kind": "text", "content": "Pong."}\n}'
+        )
+        mock_client.post.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_openrouter_acomplete_non_stream_error() -> None:
     with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
         mock_client = AsyncMock()

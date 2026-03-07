@@ -131,6 +131,92 @@ def test_openai_tool_formatting() -> None:
     assert provider._format_tools([tool]) == formatted
 
 
+def test_openai_parse_response_prefers_content_over_reasoning() -> None:
+    provider = OpenAIProvider(api_key="test_key")
+
+    result = provider._parse_response(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "Hello!",
+                        "reasoning": '{"answer":"ignored"}',
+                        "reasoning_details": [{"text": '{"answer":"also ignored"}'}],
+                    }
+                }
+            ]
+        }
+    )
+
+    assert result.content == "Hello!"
+
+
+def test_openai_parse_response_uses_reasoning_when_content_is_none() -> None:
+    provider = OpenAIProvider(api_key="test_key")
+
+    result = provider._parse_response(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "reasoning": '{"answer":"Pong."}',
+                    }
+                }
+            ]
+        }
+    )
+
+    assert result.content == '{"answer":"Pong."}'
+
+
+def test_openai_parse_response_uses_reasoning_details_when_content_is_blank() -> None:
+    provider = OpenAIProvider(api_key="test_key")
+
+    result = provider._parse_response(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "   ",
+                        "reasoning": "",
+                        "reasoning_details": [
+                            {"type": "reasoning.summary", "text": ""},
+                            {"type": "reasoning.text", "text": '{"answer":"Pong."}'},
+                        ],
+                    }
+                }
+            ]
+        }
+    )
+
+    assert result.content == '{"answer":"Pong."}'
+
+
+def test_openai_parse_response_returns_empty_string_without_reasoning_fallback() -> None:
+    provider = OpenAIProvider(api_key="test_key")
+
+    result = provider._parse_response(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "reasoning": "   ",
+                        "reasoning_details": [{}, {"text": ""}],
+                    }
+                }
+            ]
+        }
+    )
+
+    assert result.content == ""
+
+
 @pytest.mark.asyncio
 async def test_openai_acomplete_with_tools() -> None:
     with patch("llm_async.providers.base.aiosonic.HTTPClient") as MockClient:
