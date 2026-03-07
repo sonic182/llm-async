@@ -18,6 +18,26 @@ class OpenAIProvider(BaseProvider):
 
     BASE_URL = "https://api.openai.com/v1"
 
+    def _extract_message_content(self, message_payload: dict[str, Any]) -> str:
+        content_value = message_payload.get("content")
+        if isinstance(content_value, str) and content_value.strip():
+            return content_value
+
+        reasoning = message_payload.get("reasoning")
+        if isinstance(reasoning, str) and reasoning.strip():
+            return reasoning
+
+        reasoning_details = message_payload.get("reasoning_details")
+        if isinstance(reasoning_details, list):
+            for item in reasoning_details:
+                if not isinstance(item, dict):
+                    continue
+                text = item.get("text")
+                if isinstance(text, str) and text.strip():
+                    return text
+
+        return ""
+
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         return [
             {
@@ -41,9 +61,7 @@ class OpenAIProvider(BaseProvider):
                 ToolCall(id=tc.get("id", ""), type=tc.get("type", ""), function=tc.get("function"))
                 for tc in tool_calls_data
             ]
-        content_value = message_payload.get("content")
-        if content_value is None:
-            content_value = ""
+        content_value = self._extract_message_content(message_payload)
         role = message_payload.get("role", "assistant")
         return Message(
             role=role,
