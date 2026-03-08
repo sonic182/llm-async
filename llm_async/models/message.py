@@ -37,6 +37,8 @@ class Message:
     role: Role
     content: Content
     tool_calls: list[ToolCall] | None = None
+    reasoning: str | None = None
+    reasoning_details: list[dict[str, Any] | str] | None = None
     original: dict[str, Any] | None = field(default=None)
 
 
@@ -69,6 +71,27 @@ def normalize_messages(messages: Sequence[Message | Mapping[str, Any]]) -> list[
         else:
             raise TypeError("Content must be str or list of mappings")
         tool_calls = _coerce_tool_calls(message.get("tool_calls"))
+        reasoning = message.get("reasoning")
+        if reasoning is not None and not isinstance(reasoning, str):
+            raise TypeError("reasoning must be a string when provided")
+        raw_reasoning_details = message.get("reasoning_details")
+        reasoning_details: list[dict[str, Any] | str] | None
+        if raw_reasoning_details is None:
+            reasoning_details = None
+        else:
+            if not isinstance(raw_reasoning_details, Sequence) or isinstance(
+                raw_reasoning_details, (str, bytes)
+            ):
+                raise TypeError("reasoning_details must be a list when provided")
+            details: list[dict[str, Any] | str] = []
+            for entry in raw_reasoning_details:
+                if isinstance(entry, Mapping):
+                    details.append(dict(entry))
+                elif isinstance(entry, str):
+                    details.append(entry)
+                else:
+                    raise TypeError("reasoning_details entries must be mappings or strings")
+            reasoning_details = details
         original_payload: dict[str, Any] | None = dict(message)
         inner_original = original_payload.pop("original", None)
         if isinstance(inner_original, Mapping):
@@ -78,6 +101,8 @@ def normalize_messages(messages: Sequence[Message | Mapping[str, Any]]) -> list[
                 role=role,
                 content=content_value,
                 tool_calls=tool_calls,
+                reasoning=reasoning,
+                reasoning_details=reasoning_details,
                 original=original_payload,
             )
         )
@@ -98,6 +123,13 @@ def validate_messages(messages: Sequence[Message]) -> None:
         if message.tool_calls:
             if not all(isinstance(tc, ToolCall) for tc in message.tool_calls):
                 raise TypeError("tool_calls entries must be ToolCall instances")
+        if message.reasoning is not None and not isinstance(message.reasoning, str):
+            raise TypeError("reasoning must be a string when provided")
+        if message.reasoning_details is not None:
+            if not isinstance(message.reasoning_details, list):
+                raise TypeError("reasoning_details must be a list when provided")
+            if not all(isinstance(item, (Mapping, str)) for item in message.reasoning_details):
+                raise TypeError("reasoning_details entries must be mappings or strings")
 
 
 def _coerce_tool_calls(value: Any) -> list[ToolCall] | None:
@@ -127,18 +159,23 @@ def _coerce_tool_calls(value: Any) -> list[ToolCall] | None:
 
 
 def message_to_dict(message: Message) -> dict[str, Any]:
-    payload: dict[str, Any] = {}
-    if isinstance(message.original, Mapping):
+    if isinstance(message.original, Mapping) and ("content" in message.original or "parts" in message.original):
         payload = dict(message.original)
-    payload["role"] = message.role
-    if isinstance(message.content, list):
-        payload["content"] = [dict(part) for part in message.content]
     else:
-        payload["content"] = message.content
-    if message.tool_calls:
+        payload = {"role": message.role}
+        if isinstance(message.content, list):
+            payload["content"] = [dict(part) for part in message.content]
+        else:
+            payload["content"] = message.content
+
+    if message.tool_calls is not None:
         payload["tool_calls"] = [_tool_call_to_dict(tc) for tc in message.tool_calls]
-    else:
-        payload.pop("tool_calls", None)
+    if message.reasoning is not None:
+        payload["reasoning"] = message.reasoning
+    if message.reasoning_details is not None:
+        payload["reasoning_details"] = [
+            dict(item) if isinstance(item, Mapping) else item for item in message.reasoning_details
+        ]
     return payload
 
 
