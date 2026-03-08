@@ -74,24 +74,7 @@ def normalize_messages(messages: Sequence[Message | Mapping[str, Any]]) -> list[
         reasoning = message.get("reasoning")
         if reasoning is not None and not isinstance(reasoning, str):
             raise TypeError("reasoning must be a string when provided")
-        raw_reasoning_details = message.get("reasoning_details")
-        reasoning_details: list[dict[str, Any] | str] | None
-        if raw_reasoning_details is None:
-            reasoning_details = None
-        else:
-            if not isinstance(raw_reasoning_details, Sequence) or isinstance(
-                raw_reasoning_details, (str, bytes)
-            ):
-                raise TypeError("reasoning_details must be a list when provided")
-            details: list[dict[str, Any] | str] = []
-            for entry in raw_reasoning_details:
-                if isinstance(entry, Mapping):
-                    details.append(dict(entry))
-                elif isinstance(entry, str):
-                    details.append(entry)
-                else:
-                    raise TypeError("reasoning_details entries must be mappings or strings")
-            reasoning_details = details
+        reasoning_details = _coerce_reasoning_details(message.get("reasoning_details"))
         original_payload: dict[str, Any] | None = dict(message)
         inner_original = original_payload.pop("original", None)
         if isinstance(inner_original, Mapping):
@@ -132,6 +115,22 @@ def validate_messages(messages: Sequence[Message]) -> None:
                 raise TypeError("reasoning_details entries must be mappings or strings")
 
 
+def _coerce_reasoning_details(value: Any) -> list[dict[str, Any] | str] | None:
+    if value is None:
+        return None
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        raise TypeError("reasoning_details must be a list when provided")
+    details: list[dict[str, Any] | str] = []
+    for entry in value:
+        if isinstance(entry, Mapping):
+            details.append(dict(entry))
+        elif isinstance(entry, str):
+            details.append(entry)
+        else:
+            raise TypeError("reasoning_details entries must be mappings or strings")
+    return details or None
+
+
 def _coerce_tool_calls(value: Any) -> list[ToolCall] | None:
     if value is None:
         return None
@@ -170,6 +169,8 @@ def message_to_dict(message: Message) -> dict[str, Any]:
 
     if message.tool_calls is not None:
         payload["tool_calls"] = [_tool_call_to_dict(tc) for tc in message.tool_calls]
+    else:
+        payload.pop("tool_calls", None)
     if message.reasoning is not None:
         payload["reasoning"] = message.reasoning
     if message.reasoning_details is not None:
