@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-03-08
+
 ### Added
 - **`Message.stop_reason`**: New `str | None` field on the `Message` dataclass carrying the raw stop reason string returned by each provider.
   - **OpenAI / OpenRouter**: populated from `choices[0].finish_reason` (e.g. `"stop"`, `"tool_calls"`, `"length"`).
@@ -143,7 +145,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.5.1...HEAD
+[0.5.1]: https://github.com/sonic182/llm-async/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sonic182/llm-async/compare/0.4.3...0.5.0
 [0.4.3]: https://github.com/sonic182/llm-async/compare/0.4.2...0.4.3
 [0.4.2]: https://github.com/sonic182/llm-async/compare/0.4.1...0.4.2
