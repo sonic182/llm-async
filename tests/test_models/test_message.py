@@ -64,6 +64,79 @@ def test_normalize_allows_none_content() -> None:
     assert normalized[0].tool_calls and normalized[0].tool_calls[0].id == "call_1"
 
 
+def test_normalize_accepts_reasoning_fields() -> None:
+    normalized = normalize_messages(
+        [
+            {
+                "role": "assistant",
+                "content": "ok",
+                "reasoning": "chain",
+                "reasoning_details": ["step1", {"text": "step2"}],
+            }
+        ]
+    )
+
+    assert normalized[0].reasoning == "chain"
+    assert normalized[0].reasoning_details == ["step1", {"text": "step2"}]
+
+
+def test_message_to_dict_preserves_original_content_for_reasoning_roundtrip() -> None:
+    message = Message(
+        role="assistant",
+        content='{"answer":"from reasoning"}',
+        tool_calls=[
+            ToolCall(
+                id="call_1",
+                type="function",
+                function={"name": "noop", "arguments": {}},
+            )
+        ],
+        original={
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": "call_1",
+                    "type": "function",
+                    "function": {"name": "noop", "arguments": {}},
+                }
+            ],
+            "reasoning_details": [{"type": "reasoning.text", "text": "internal"}],
+        },
+    )
+
+    payload = message_to_dict(message)
+
+    assert payload["content"] is None
+    assert payload["reasoning_details"] == [{"type": "reasoning.text", "text": "internal"}]
+
+
+def test_message_to_dict_returns_original_payload_when_original_has_content() -> None:
+    message = Message(
+        role="assistant",
+        content="normalized",
+        original={"role": "assistant", "content": None, "reasoning_details": [{"text": "a"}]},
+    )
+
+    payload = message_to_dict(message)
+
+    assert payload == {"role": "assistant", "content": None, "reasoning_details": [{"text": "a"}]}
+
+
+def test_message_to_dict_sets_reasoning_fields_when_explicitly_provided() -> None:
+    message = Message(
+        role="assistant",
+        content="hello",
+        reasoning="analysis",
+        reasoning_details=["step", {"text": "second"}],
+    )
+
+    payload = message_to_dict(message)
+
+    assert payload["reasoning"] == "analysis"
+    assert payload["reasoning_details"] == ["step", {"text": "second"}]
+
+
 def test_normalize_rejects_invalid_role() -> None:
     with pytest.raises(ValueError):
         normalize_messages([{"role": "model", "content": "hi"}])

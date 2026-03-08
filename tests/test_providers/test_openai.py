@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from llm_async.models import Message, Response, Tool
+from llm_async.models.message import message_to_dict
 from llm_async.models.response_schema import ResponseSchema
 from llm_async.providers.openai import OpenAIProvider
 
@@ -194,6 +195,40 @@ def test_openai_parse_response_uses_reasoning_details_when_content_is_blank() ->
     )
 
     assert result.content == '{"answer":"Pong."}'
+
+
+def test_openai_parse_response_roundtrip_preserves_original_content() -> None:
+    provider = OpenAIProvider(api_key="test_key")
+
+    result = provider._parse_response(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "reasoning_details": [
+                            {"type": "reasoning.text", "text": '{"answer":"Pong."}'}
+                        ],
+                        "tool_calls": [
+                            {
+                                "id": "call_1",
+                                "type": "function",
+                                "function": {"name": "noop", "arguments": "{}"},
+                            }
+                        ],
+                    }
+                }
+            ]
+        }
+    )
+
+    payload = message_to_dict(result)
+
+    assert payload["content"] is None
+    assert payload["reasoning_details"] == [
+        {"type": "reasoning.text", "text": '{"answer":"Pong."}'}
+    ]
 
 
 def test_openai_parse_response_returns_empty_string_without_reasoning_fallback() -> None:
