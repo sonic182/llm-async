@@ -26,6 +26,7 @@ class ClaudeProvider(BaseProvider):
 
     def _parse_response(self, original: dict[str, Any]) -> Message:
         content_blocks = original.get("content", [])
+        stop_reason = original.get("stop_reason")
         text_content = ""
         tool_calls: list[ToolCall] = []
         for block in content_blocks:
@@ -50,6 +51,7 @@ class ClaudeProvider(BaseProvider):
             role=message["role"],
             content=text_content or "",
             tool_calls=tool_calls or None,
+            stop_reason=stop_reason,
             original=message,
         )
 

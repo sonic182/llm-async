@@ -51,5 +51,5 @@ class ResponseSchema:
     def for_google(self) -> dict[str, Any]:
         return {
             "responseMimeType": self.mime_type,
-            "responseSchema": deepcopy(self.schema),
+            "responseJsonSchema": deepcopy(self.schema),
         }

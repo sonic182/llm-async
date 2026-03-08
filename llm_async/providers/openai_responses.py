@@ -132,6 +132,26 @@ class OpenAIResponsesProvider(BaseProvider):
 
         return responses_messages if responses_messages else messages
 
+    @staticmethod
+    def _derive_stop_reason(
+        original: dict[str, Any], tool_calls: list[ToolCall] | None
+    ) -> str | None:
+        if not isinstance(original, dict):
+            return None
+        if tool_calls:
+            return "tool_calls"
+        output_items = original.get("output")
+        if isinstance(output_items, list):
+            for item in output_items:
+                if isinstance(item, dict) and item.get("type") == "function_call":
+                    return "tool_calls"
+        incomplete_details = original.get("incomplete_details")
+        if incomplete_details:
+            return "length"
+        if isinstance(output_items, list) and output_items:
+            return "stop"
+        return None
+
     def _parse_response(self, original: dict[str, Any]) -> Message:
         text: str = ""
         tool_calls: list[ToolCall] | None = None
@@ -221,8 +241,13 @@ class OpenAIResponsesProvider(BaseProvider):
                 if tc.function
             ]
 
+        stop_reason = self._derive_stop_reason(original, tool_calls)
         return Message(
-            role="assistant", content=text, tool_calls=tool_calls, original=message_payload
+            role="assistant",
+            content=text,
+            tool_calls=tool_calls,
+            stop_reason=stop_reason,
+            original=message_payload,
         )
 
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:

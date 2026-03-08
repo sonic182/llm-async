@@ -54,6 +54,7 @@ class OpenAIProvider(BaseProvider):
     def _parse_response(self, original: dict[str, Any]) -> Message:
         choice = original["choices"][0]
         message_payload = choice["message"]
+        stop_reason = choice.get("finish_reason")
         tool_calls_data = message_payload.get("tool_calls")
         tool_calls = None
         if tool_calls_data:
@@ -67,6 +68,7 @@ class OpenAIProvider(BaseProvider):
             role=role,
             content=content_value,
             tool_calls=tool_calls,
+            stop_reason=stop_reason,
             original=message_payload,
         )
 

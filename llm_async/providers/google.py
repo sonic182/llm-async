@@ -48,14 +48,25 @@ class GoogleProvider(BaseProvider):
 
         super().__init__(api_key, base_url, retry_config, client_kwargs, http2)
 
+    @staticmethod
+    def _clean_schema(schema: Any) -> Any:
+        if isinstance(schema, dict):
+            return {
+                k: GoogleProvider._clean_schema(v)
+                for k, v in schema.items()
+                if k != "additionalProperties"
+            }
+        if isinstance(schema, list):
+            return [GoogleProvider._clean_schema(item) for item in schema]
+        return schema
+
     def _format_tools(self, tools: list[Tool]) -> list[dict[str, Any]]:
         formatted_tools = []
         for tool in tools:
             formatted_tool = {"name": tool.name, "description": tool.description or ""}
-            if tool.parameters:
-                formatted_tool["parameters"] = tool.parameters  # type: ignore
-            elif tool.input_schema:
-                formatted_tool["parameters"] = tool.input_schema  # type: ignore
+            schema = tool.parameters or tool.input_schema
+            if schema:
+                formatted_tool["parameters"] = self._clean_schema(schema)  # type: ignore
             formatted_tools.append(formatted_tool)
         return [{"functionDeclarations": formatted_tools}]
 
@@ -66,9 +77,11 @@ class GoogleProvider(BaseProvider):
                 role="assistant",
                 content="",
                 tool_calls=None,
+                stop_reason=None,
                 original={"role": "model", "parts": []},
             )
         candidate = candidates[0]
+        stop_reason = candidate.get("finishReason")
         content_data = candidate.get("content", {})
         parts = content_data.get("parts", [])
 
@@ -100,6 +113,7 @@ class GoogleProvider(BaseProvider):
             role=role,
             content=text_content or "",
             tool_calls=tool_calls or None,
+            stop_reason=stop_reason,
             original=message,
         )
 

@@ -29,7 +29,7 @@ def test_response_schema_for_google_keeps_additional_properties() -> None:
         }
     )
     payload = schema.for_google()
-    google_schema = payload["responseSchema"]
+    google_schema = payload["responseJsonSchema"]
     assert google_schema["additionalProperties"] is True
     assert google_schema["properties"]["x"]["additionalProperties"] is False
     inner_list = google_schema["properties"]["y"]

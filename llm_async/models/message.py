@@ -39,6 +39,7 @@ class Message:
     tool_calls: list[ToolCall] | None = None
     reasoning: str | None = None
     reasoning_details: list[dict[str, Any] | str] | None = None
+    stop_reason: str | None = None
     original: dict[str, Any] | None = field(default=None)
 
 

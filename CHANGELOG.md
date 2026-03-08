@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **`Message.stop_reason`**: New `str | None` field on the `Message` dataclass carrying the raw stop reason string returned by each provider.
+  - **OpenAI / OpenRouter**: populated from `choices[0].finish_reason` (e.g. `"stop"`, `"tool_calls"`, `"length"`).
+  - **Claude**: populated from the top-level `stop_reason` field (e.g. `"end_turn"`, `"tool_use"`).
+  - **Google**: populated from `candidates[0].finishReason` (e.g. `"STOP"`, `"MAX_TOKENS"`).
+  - **OpenAI Responses API**: derived from the `output` items — `"tool_calls"` when a `function_call` item is present, `"length"` when `incomplete_details` is set, `"stop"` otherwise.
+
+### Changed
+- **Google `_format_tools`**: Tool parameter schemas are now deep-cleaned to remove `additionalProperties` before being sent to the Gemini API, which rejects that field.
+- **`ResponseSchema.for_google`**: Switched from the legacy `responseSchema` key to the modern `responseJsonSchema` key to align with the Gemini 2.0+ API specification.
+
 ## [0.5.0] - 2026-03-08
 
 ### Added
