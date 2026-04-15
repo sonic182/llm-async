@@ -75,7 +75,11 @@ def _build_schema(func: Callable[..., Any]) -> dict[str, Any]:
         if not has_default and not is_optional and schema is not None:
             required.append(name)
 
-    result: dict[str, Any] = {"type": "object", "properties": properties}
+    result: dict[str, Any] = {
+        "type": "object",
+        "properties": properties,
+        "additionalProperties": False,
+    }
     if required:
         result["required"] = required
     return result
