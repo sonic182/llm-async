@@ -27,6 +27,7 @@ High-performance, async-first LLM client for OpenAI, Claude, Google Gemini, and 
   - [HTTP/2](#http2)
   - [Direct API Requests](#direct-api-requests)
   - [Tool Usage](#tool-usage)
+    - [@tool Decorator](#tool-decorator)
   - [Structured Outputs](#structured-outputs)
   - [OpenAI Responses API with Prompt Caching](#openai-responses-api-with-prompt-caching)
 - [API Reference](#api-reference)
@@ -249,6 +250,90 @@ The `request()` method supports all HTTP verbs: GET, POST, PUT, DELETE, PATCH. I
 See `examples/provider_request.py` for a complete example.
 
 ### Tool Usage
+
+#### @tool Decorator
+
+The `@tool` decorator builds a `Tool` instance automatically from a function's name, docstring, and type annotations. The decorated function remains fully callable.
+
+```python
+from llm_async import tool
+
+@tool
+def word_count(text: str) -> int:
+    """Count the number of words in a text string.
+
+    This docstring is used by the LLM to understand the tool's purpose.
+    """
+    return len(text.split())
+
+# Still callable as a regular function
+word_count("hello world")  # 2
+
+# .tool gives the Tool instance ready to pass to acomplete()
+print(word_count.tool.name)         # "word_count"
+print(word_count.tool.description)  # "Count the number of words in a text string. ..."
+print(word_count.tool.parameters)
+# {
+#   "type": "object",
+#   "properties": {"text": {"type": "string"}},
+#   "required": ["text"]
+# }
+```
+
+**Supported type annotations:**
+
+| Python type | JSON Schema type |
+|---|---|
+| `str` | `string` |
+| `int` | `integer` |
+| `float` | `number` |
+| `bool` | `boolean` |
+| `list` / `list[T]` | `array` / `array` with `items` |
+| `dict` | `object` |
+| `T \| None` | same as `T`, not required |
+| *(no annotation)* | parameter omitted |
+
+Parameters without a default value are marked `required`. `T | None` parameters and those with a default value are not.
+
+**Using with providers:**
+
+```python
+import asyncio
+import os
+from llm_async import OpenAIProvider, tool
+
+@tool
+def calculator(operation: str, a: float, b: float) -> float:
+    """Perform basic arithmetic: add, subtract, multiply, or divide."""
+    ops = {"add": a + b, "subtract": a - b, "multiply": a * b, "divide": a / b}
+    return ops[operation]
+
+async def main():
+    provider = OpenAIProvider(api_key=os.getenv("OPENAI_API_KEY"))
+
+    response = await provider.acomplete(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": "What is 15 + 27?"}],
+        tools=[calculator.tool],
+    )
+
+    tool_call = response.main_response.tool_calls[0]
+    tool_result = await provider.execute_tool(tool_call, {"calculator": calculator})
+
+    messages = [
+        {"role": "user", "content": "What is 15 + 27?"},
+        response.main_response.original,
+        tool_result,
+    ]
+    final = await provider.acomplete(model="gpt-4o-mini", messages=messages)
+    print(final.main_response.content)
+
+asyncio.run(main())
+```
+
+---
+
+You can also define tools manually using the `Tool` dataclass when you need fine-grained control over the schema (e.g. enum constraints):
 
 ```python
 import asyncio
