@@ -76,3 +76,6 @@ pass it to ``acomplete``, then execute the returned tool call and send the resul
    asyncio.run(main())
 
 See ``examples/tool_call_all_providers.py`` for a cross-provider tool-call demo.
+
+For an automatic tool-call loop using decorated Python functions, see
+:doc:`agent`.

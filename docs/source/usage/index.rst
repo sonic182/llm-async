@@ -7,6 +7,7 @@ Usage
    basic
    streaming
    tools
+   agent
    structured
    responses_api
    xai_responses

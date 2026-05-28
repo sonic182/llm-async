@@ -86,6 +86,13 @@ def _build_schema(func: Callable[..., Any]) -> dict[str, Any]:
 
 
 def tool(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorate a function as an LLM tool.
+
+    The decorated function remains callable and receives a ``tool`` attribute containing
+    a generated :class:`llm_async.models.Tool` definition. The generated schema uses the
+    function name, docstring, and supported parameter type annotations.
+    """
+
     @functools.wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         return func(*args, **kwargs)

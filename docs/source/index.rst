@@ -80,6 +80,7 @@ Why llm-async?
    :maxdepth: 2
    :caption: API Reference
 
+   agent
    models
    providers/index
 
