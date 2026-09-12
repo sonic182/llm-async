@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-09-13
+
+### Fixed
+- **`OpenAIResponsesProvider` streaming tool calls**: `_stream_responses_request` now accumulates `response.output_item.done` items during the stream and populates `response.main_response` (via the existing `_parse_response`) once the stream is drained, so `response.main_response.tool_calls`/`.content` are available after streaming, matching the non-streaming path.
+- **`OpenAIResponsesProvider._extract_stream_text`**: No longer misclassifies `response.function_call_arguments.delta` fragments as visible assistant text, which previously leaked raw tool-call argument JSON into `stream_content()`.
+- **`OpenAIResponsesProvider._parse_response`**: Stored `tool_calls` entries now keep the real `call_id` (via `input`), so continuing a conversation from `main_response.original` echoes the correct `call_id` on the next turn instead of falling back to the function-call item's own `id`.
+
 ## [0.5.1] - 2026-03-08
 
 ### Added
@@ -145,7 +152,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.5.1...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.5.2...HEAD
+[0.5.2]: https://github.com/sonic182/llm-async/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/sonic182/llm-async/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sonic182/llm-async/compare/0.4.3...0.5.0
 [0.4.3]: https://github.com/sonic182/llm-async/compare/0.4.2...0.4.3
