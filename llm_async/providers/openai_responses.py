@@ -114,12 +114,16 @@ class OpenAIResponsesProvider(BaseProvider):
                                     "type": "function_call",
                                     "id": fc_id,
                                     "call_id": call_id,
-                                    "name": tc.get("function", {}).get("name")
-                                    if isinstance(tc.get("function"), dict)
-                                    else tc.get("name", ""),
-                                    "arguments": tc.get("function", {}).get("arguments")
-                                    if isinstance(tc.get("function"), dict)
-                                    else "",
+                                    "name": (
+                                        tc.get("function", {}).get("name")
+                                        if isinstance(tc.get("function"), dict)
+                                        else tc.get("name", "")
+                                    ),
+                                    "arguments": (
+                                        tc.get("function", {}).get("arguments")
+                                        if isinstance(tc.get("function"), dict)
+                                        else ""
+                                    ),
                                 }
                             )
                     else:
@@ -221,9 +225,11 @@ class OpenAIResponsesProvider(BaseProvider):
                         ToolCall(
                             id=tc.get("id", ""),
                             type=tc.get("type", ""),
-                            name=tc.get("function", {}).get("name")
-                            if isinstance(tc.get("function"), dict)
-                            else None,
+                            name=(
+                                tc.get("function", {}).get("name")
+                                if isinstance(tc.get("function"), dict)
+                                else None
+                            ),
                             function=tc.get("function"),
                         )
                         for tc in tcs
@@ -236,6 +242,7 @@ class OpenAIResponsesProvider(BaseProvider):
                     "id": tc.id,
                     "type": tc.type,
                     "function": tc.function,
+                    **({"input": tc.input} if tc.input else {}),
                 }
                 for tc in tool_calls
                 if tc.function
@@ -303,7 +310,10 @@ class OpenAIResponsesProvider(BaseProvider):
     def _stream_responses_request(
         self, url: str, payload: dict[str, Any], headers: HeadersType
     ) -> Response:
+        response = Response({}, self.__class__.name(), stream=True, stream_generator=None)
+
         async def _gen():
+            accumulated_items: list[dict[str, Any]] = []
             async for chunk in stream_json(
                 self.client,
                 url,
@@ -313,15 +323,23 @@ class OpenAIResponsesProvider(BaseProvider):
             ):
                 if not isinstance(chunk, dict):
                     continue
+                if chunk.get("type") == "response.output_item.done":
+                    item = chunk.get("item")
+                    if isinstance(item, dict):
+                        accumulated_items.append(item)
                 delta_text = self._extract_stream_text(chunk)
                 if delta_text:
                     yield StreamChunk(delta_text, chunk)
+            response.main_response = self._parse_response({"output": accumulated_items})
 
-        return Response({}, self.__class__.name(), stream=True, stream_generator=_gen())
+        response.stream_generator = _gen()
+        return response
 
     @staticmethod
     def _extract_stream_text(chunk: dict[str, Any]) -> str | None:
         chunk_type = chunk.get("type")
+        if chunk_type == "response.function_call_arguments.delta":
+            return None
         if isinstance(chunk_type, str) and chunk_type.endswith(".delta"):
             delta = chunk.get("delta")
             if isinstance(delta, str) and delta:
