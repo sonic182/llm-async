@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-09-13
+
+### Fixed
+- **Responses reasoning replay**: Raw `reasoning` output items are retained during parsing and replayed before function calls in manual full-history follow-ups, including streamed Responses calls.
+
 ## [0.5.2] - 2026-09-13
 
 ### Fixed
@@ -152,7 +157,8 @@ All notable changes to this project will be documented in this file.
 - This changelog entry was bootstrapped from `README.md` and existing tests.
 - For developer commands, testing and build instructions see `README.md`.
 
-[Unreleased]: https://github.com/sonic182/llm-async/compare/0.5.2...HEAD
+[Unreleased]: https://github.com/sonic182/llm-async/compare/0.5.3...HEAD
+[0.5.3]: https://github.com/sonic182/llm-async/compare/0.5.2...0.5.3
 [0.5.2]: https://github.com/sonic182/llm-async/compare/0.5.1...0.5.2
 [0.5.1]: https://github.com/sonic182/llm-async/compare/0.5.0...0.5.1
 [0.5.0]: https://github.com/sonic182/llm-async/compare/0.4.3...0.5.0
