@@ -35,6 +35,11 @@ def _normalize_responses_messages(
                     for tc in message.tool_calls
                     if tc.function
                 ]
+            if message.reasoning_details:
+                msg_dict["reasoning_details"] = [
+                    dict(item) if isinstance(item, Mapping) else item
+                    for item in message.reasoning_details
+                ]
             normalized.append(msg_dict)
         elif isinstance(message, Mapping):
             normalized.append(dict(message))
@@ -103,6 +108,9 @@ class OpenAIResponsesProvider(BaseProvider):
                 elif role == "assistant":
                     tool_calls = msg.get("tool_calls")
                     if tool_calls:
+                        for item in msg.get("reasoning_details") or []:
+                            if isinstance(item, Mapping) and item.get("type") == "reasoning":
+                                responses_messages.append(dict(item))
                         for tc in tool_calls:
                             fc_id = tc.get("id", "")
                             call_id = tc.get("id", "")
@@ -159,14 +167,20 @@ class OpenAIResponsesProvider(BaseProvider):
     def _parse_response(self, original: dict[str, Any]) -> Message:
         text: str = ""
         tool_calls: list[ToolCall] | None = None
+        reasoning_details: list[dict[str, Any]] | None = None
 
         if isinstance(original, dict):
             output_items = original.get("output")
             if isinstance(output_items, list) and output_items:
                 parts: list[str] = []
                 parsed_tool_calls: list[ToolCall] = []
+                parsed_reasoning_details: list[dict[str, Any]] = []
                 for item in output_items:
                     if not isinstance(item, dict):
+                        continue
+
+                    if item.get("type") == "reasoning":
+                        parsed_reasoning_details.append(dict(item))
                         continue
 
                     if item.get("type") == "function_call":
@@ -212,6 +226,8 @@ class OpenAIResponsesProvider(BaseProvider):
                     text = "".join(parts)
                 if parsed_tool_calls:
                     tool_calls = parsed_tool_calls
+                if parsed_reasoning_details:
+                    reasoning_details = parsed_reasoning_details
             elif isinstance(original.get("output_text"), str):
                 text = original.get("output_text", "")
             elif isinstance(original.get("choices"), list):
@@ -247,12 +263,15 @@ class OpenAIResponsesProvider(BaseProvider):
                 for tc in tool_calls
                 if tc.function
             ]
+        if reasoning_details:
+            message_payload["reasoning_details"] = [dict(item) for item in reasoning_details]
 
         stop_reason = self._derive_stop_reason(original, tool_calls)
         return Message(
             role="assistant",
             content=text,
             tool_calls=tool_calls,
+            reasoning_details=reasoning_details,
             stop_reason=stop_reason,
             original=message_payload,
         )

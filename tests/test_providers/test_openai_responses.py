@@ -2,6 +2,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from llm_async.models import Message
+from llm_async.models.tool_call import ToolCall
 from llm_async.providers.openai_responses import OpenAIResponsesProvider
 
 
@@ -14,6 +16,11 @@ async def test_stream_function_call_populates_main_response() -> None:
         mock_response.status_code = 200
 
         async def chunks():
+            yield (
+                b'data: {"type": "response.output_item.done", "item": '
+                b'{"id": "rs_1", "type": "reasoning", "status": "completed", '
+                b'"encrypted_content": "opaque"}, "output_index": 0}\n\n'
+            )
             yield (
                 b'data: {"type": "response.output_item.added", "item": '
                 b'{"id": "fc_1", "type": "function_call", "status": "in_progress", '
@@ -50,6 +57,14 @@ async def test_stream_function_call_populates_main_response() -> None:
         assert collected == []
 
         assert response.main_response is not None
+        assert response.main_response.reasoning_details == [
+            {
+                "id": "rs_1",
+                "type": "reasoning",
+                "status": "completed",
+                "encrypted_content": "opaque",
+            }
+        ]
         assert response.main_response.tool_calls is not None
         tool_call = response.main_response.tool_calls[0]
         assert tool_call.name == "add_numbers"
@@ -100,24 +115,67 @@ def test_parse_response_keeps_call_id_for_continuation() -> None:
     original = {
         "output": [
             {
+                "id": "rs_1",
+                "type": "reasoning",
+                "encrypted_content": "opaque",
+            },
+            {
                 "id": "fc_1",
                 "type": "function_call",
                 "call_id": "call_abc",
                 "name": "add_numbers",
                 "arguments": '{"a":1,"b":2}',
-            }
+            },
         ]
     }
 
     message = provider._parse_response(original)
+    assert message.reasoning_details == [
+        {"id": "rs_1", "type": "reasoning", "encrypted_content": "opaque"}
+    ]
+    assert message.original["reasoning_details"] == message.reasoning_details
     stored_tool_call = message.original["tool_calls"][0]
     assert stored_tool_call["input"]["call_id"] == "call_abc"
 
     follow_up = provider._messages_to_input(
         [
             {"role": "user", "content": "add 1 and 2"},
-            {"role": "assistant", "tool_calls": message.original["tool_calls"]},
+            message.original,
         ]
     )
+    assert [item.get("type") or item.get("role") for item in follow_up] == [
+        "user",
+        "reasoning",
+        "function_call",
+    ]
     echoed_function_call = next(item for item in follow_up if item.get("type") == "function_call")
     assert echoed_function_call["call_id"] == "call_abc"
+
+
+@pytest.mark.asyncio
+async def test_message_reasoning_details_are_replayed_in_request() -> None:
+    provider = OpenAIResponsesProvider(api_key="test_key")
+    message = Message(
+        role="assistant",
+        content="",
+        reasoning_details=[{"id": "rs_1", "type": "reasoning", "encrypted_content": "opaque"}],
+        tool_calls=[
+            ToolCall(
+                id="call_abc",
+                type="function",
+                function={"name": "add_numbers", "arguments": '{"a":1,"b":2}'},
+            )
+        ],
+    )
+
+    with patch(
+        "llm_async.providers.openai_responses.post_json", new_callable=AsyncMock
+    ) as post_json:
+        post_json.return_value = {"output": []}
+        await provider.acomplete(model="gpt-4.1", messages=[message])
+
+    payload = post_json.await_args.args[2]
+    assert [item.get("type") or item.get("role") for item in payload["input"]] == [
+        "reasoning",
+        "function_call",
+    ]
